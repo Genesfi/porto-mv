@@ -500,7 +500,17 @@ export default function Home() {
                   style={(i % 14 === 0 && i + 2 >= filtered.length) ? { aspectRatio: '64/27' } : {}}
                 >
                   <span className="wnum">{String(i + 1).padStart(2, "0")}</span>
-                  {ytID && <img src={`https://img.youtube.com/vi/${ytID}/maxresdefault.jpg`} alt={item.title} className="wt" />}
+                  {ytID && (
+                    <img
+                      src={`https://img.youtube.com/vi/${ytID}/maxresdefault.jpg`}
+                      alt={item.title}
+                      className="wt"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/hqdefault.jpg`;
+                      }}
+                    />
+                  )}
                   <div className="wo">
                     <div><p className="wc">{item.category}</p><h3 className="wn">{item.title}</h3></div>
                   </div>
