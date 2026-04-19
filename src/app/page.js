@@ -506,8 +506,21 @@ export default function Home() {
                       alt={item.title}
                       className="wt"
                       onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/hqdefault.jpg`;
+                        const currentSrc = e.currentTarget.src;
+
+                        if (currentSrc.includes("maxresdefault.jpg")) {
+                          // Fallback 1: High Quality
+                          e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/hqdefault.jpg`;
+                        } else if (currentSrc.includes("hqdefault.jpg")) {
+                          // Fallback 2: Medium Quality
+                          e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/mqdefault.jpg`;
+                        } else if (currentSrc.includes("mqdefault.jpg")) {
+                          // Fallback 3: Jurus Pamungkas (Player Default)
+                          e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/0.jpg`;
+                        } else {
+                          // Nyerah biar nggak infinite loop
+                          e.currentTarget.onerror = null;
+                        }
                       }}
                     />
                   )}
