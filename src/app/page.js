@@ -27,7 +27,6 @@ const DEFAULT = {
   about_text: "Music videos, kinetic typography, and visual storytelling that moves audiences and artists alike.",
   showreel_url: "",
   socials: [],
-  // Tambahan default value buat jaga-jaga kalau data kosong
   about_name: "Migi Gustian",
   about_role: "Motion Designer",
   about_photo_url: "",
@@ -70,17 +69,18 @@ function BackgroundCardStack({ cards, paused }) {
 
   const visible = [0, 1, 2, 3].map(offset => cards[(index + offset + 2) % cards.length]);
 
+  // PERBAIKAN 1: Tambah properti 'z' biar kartu dikasih jarak ke belakang layarnya
   const POSITIONS_BG_DESKTOP = [
-    { x: -250, y: 0, rotateZ: 15, rotateX: -20, scale: 0.45, opacity: 0.20, zIndex: 4 },
-    { x: 0, y: 30, rotateZ: 5, rotateX: -15, scale: 0.4, opacity: 0.12, zIndex: 3 },
-    { x: 250, y: 50, rotateZ: -5, rotateX: -10, scale: 0.35, opacity: 0.08, zIndex: 2 },
-    { x: 500, y: 60, rotateZ: -15, rotateX: -5, scale: 0.3, opacity: 0.03, zIndex: 1 },
+    { x: -250, y: 0,  z: 0,    rotateZ: 15, rotateX: -20, scale: 0.45, opacity: 0.20, zIndex: 4 },
+    { x: 0,    y: 30, z: -50,  rotateZ: 5,  rotateX: -15, scale: 0.4,  opacity: 0.12, zIndex: 3 },
+    { x: 250,  y: 50, z: -100, rotateZ: -5, rotateX: -10, scale: 0.35, opacity: 0.08, zIndex: 2 },
+    { x: 500,  y: 60, z: -150, rotateZ: -15,rotateX: -5,  scale: 0.3,  opacity: 0.03, zIndex: 1 },
   ];
   const POSITIONS_BG_MOBILE = [
-    { x: -120, y: 0, rotateZ: 15, rotateX: -20, scale: 0.45, opacity: 0.55, zIndex: 4 },
-    { x: 0, y: 15, rotateZ: 5, rotateX: -15, scale: 0.4, opacity: 0.35, zIndex: 3 },
-    { x: 120, y: 25, rotateZ: -5, rotateX: -10, scale: 0.35, opacity: 0.20, zIndex: 2 },
-    { x: 230, y: 30, rotateZ: -15, rotateX: -5, scale: 0.3, opacity: 0.08, zIndex: 1 },
+    { x: -120, y: 0,  z: 0,   rotateZ: 15, rotateX: -20, scale: 0.45, opacity: 0.55, zIndex: 4 },
+    { x: 0,    y: 15, z: -40, rotateZ: 5,  rotateX: -15, scale: 0.4,  opacity: 0.35, zIndex: 3 },
+    { x: 120,  y: 25, z: -80, rotateZ: -5, rotateX: -10, scale: 0.35, opacity: 0.20, zIndex: 2 },
+    { x: 230,  y: 30, z: -120,rotateZ: -15,rotateX: -5,  scale: 0.3,  opacity: 0.08, zIndex: 1 },
   ];
   const POSITIONS = isMobile ? POSITIONS_BG_MOBILE : POSITIONS_BG_DESKTOP;
 
@@ -110,14 +110,15 @@ function BackgroundCardStack({ cards, paused }) {
                 width: isMobile ? 160 : 400, height: isMobile ? 90 : 225,
                 borderRadius: 12,
                 overflow: "hidden",
-                boxShadow: "0 10px 20px rgba(0,0,0,0.5)", // PERBAIKAN: Ganti filter jadi box-shadow
-                willChange: "transform, opacity", // PERBAIKAN: Jalur VIP GPU
+                boxShadow: "0 10px 20px rgba(0,0,0,0.5)", 
+                willChange: "transform, opacity", 
                 transformOrigin: "center center",
                 zIndex: pos.zIndex,
               }}
-              initial={{ y: -100, x: -500, rotateZ: 30, rotateX: -30, scale: 0.2, opacity: 0 }}
-              animate={{ x: pos.x, y: pos.y, rotateZ: pos.rotateZ, rotateX: pos.rotateX, scale: pos.scale, opacity: pos.opacity }}
-              exit={{ y: 100, x: 700, rotateZ: -30, rotateX: 10, scale: 0.5, opacity: 0, zIndex: 5 }}
+              // Jangan lupa properti Z ikut dianimasikan
+              initial={{ y: -100, x: -500, z: -300, rotateZ: 30, rotateX: -30, scale: 0.2, opacity: 0 }}
+              animate={{ x: pos.x, y: pos.y, z: pos.z, rotateZ: pos.rotateZ, rotateX: pos.rotateX, scale: pos.scale, opacity: pos.opacity }}
+              exit={{ y: 100, x: 700, z: 100, rotateZ: -30, rotateX: 10, scale: 0.5, opacity: 0, zIndex: 5 }}
               transition={{ duration: 1.5, ease: [0.32, 0.72, 0, 1] }}
             >
               <img src={card.src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -155,18 +156,19 @@ function HeroCardStack({ cards, onCardClick, paused, isMobileOverride }) {
 
   const visible = [0, 1, 2, 3].map(offset => cards[(index + offset) % cards.length]);
 
+  // PERBAIKAN 2: Tambah 'z' jarak kedalaman. Makin ke belakang makin minus (-) nilainya.
   const POSITIONS_DESKTOP = [
-    { x: -140, y: -20, rotateZ: -5, rotateX: 18, scale: 1, opacity: 1, zIndex: 40 },
-    { x: 80, y: 40, rotateZ: 6, rotateX: 25, scale: 0.9, opacity: 1, zIndex: 30 },
-    { x: 260, y: 100, rotateZ: 18, rotateX: 30, scale: 0.8, opacity: 1, zIndex: 20 },
-    { x: 420, y: 150, rotateZ: 28, rotateX: 34, scale: 0.7, opacity: 1, zIndex: 10 },
+    { x: -140, y: -20, z: 0,    rotateZ: -5, rotateX: 18, scale: 1, opacity: 1, zIndex: 40 },
+    { x: 80,   y: 40,  z: -80,  rotateZ: 6,  rotateX: 25, scale: 0.9, opacity: 1, zIndex: 30 },
+    { x: 260,  y: 100, z: -160, rotateZ: 18, rotateX: 30, scale: 0.8, opacity: 1, zIndex: 20 },
+    { x: 420,  y: 150, z: -240, rotateZ: 28, rotateX: 34, scale: 0.7, opacity: 1, zIndex: 10 },
   ];
 
   const POSITIONS_MOBILE = [
-    { x: -60, y: -10, rotateZ: -5, rotateX: 18, scale: 1, opacity: 1, zIndex: 40 },
-    { x: 30, y: 20, rotateZ: 6, rotateX: 25, scale: 0.9, opacity: 1, zIndex: 30 },
-    { x: 110, y: 50, rotateZ: 18, rotateX: 30, scale: 0.8, opacity: 1, zIndex: 20 },
-    { x: 185, y: 75, rotateZ: 28, rotateX: 34, scale: 0.7, opacity: 1, zIndex: 10 },
+    { x: -60, y: -10, z: 0,    rotateZ: -5, rotateX: 18, scale: 1, opacity: 1, zIndex: 40 },
+    { x: 30,  y: 20,  z: -60,  rotateZ: 6,  rotateX: 25, scale: 0.9, opacity: 1, zIndex: 30 },
+    { x: 110, y: 50,  z: -120, rotateZ: 18, rotateX: 30, scale: 0.8, opacity: 1, zIndex: 20 },
+    { x: 185, y: 75,  z: -180, rotateZ: 28, rotateX: 34, scale: 0.7, opacity: 1, zIndex: 10 },
   ];
 
   const POSITIONS = isMobile ? POSITIONS_MOBILE : POSITIONS_DESKTOP;
@@ -205,16 +207,19 @@ function HeroCardStack({ cards, onCardClick, paused, isMobileOverride }) {
                 transformOrigin: "center center",
                 zIndex: pos.zIndex,
                 pointerEvents: "auto",
-                boxShadow: isTop ? "0 30px 40px rgba(0,0,0,0.55)" : "0 8px 16px rgba(0,0,0,0.35)", // PERBAIKAN
-                willChange: "transform, opacity, box-shadow", // PERBAIKAN
+                boxShadow: isTop ? "0 30px 40px rgba(0,0,0,0.55)" : "0 8px 16px rgba(0,0,0,0.35)",
+                willChange: "transform, opacity, box-shadow", 
               }}
-              initial={{ y: 200, x: isMobile ? 300 : 600, rotateZ: 35, rotateX: 45, scale: 0.6, opacity: 0 }}
-              animate={{ x: pos.x, y: pos.y, rotateZ: pos.rotateZ, rotateX: pos.rotateX, scale: pos.scale, opacity: pos.opacity }}
-              exit={{ y: -250, x: isMobile ? -200 : -500, rotateZ: -20, rotateX: 5, scale: 1.1, opacity: 0, zIndex: 50 }}
+              // Animasikan properti Z-nya juga
+              initial={{ y: 200, x: isMobile ? 300 : 600, z: -400, rotateZ: 35, rotateX: 45, scale: 0.6, opacity: 0 }}
+              animate={{ x: pos.x, y: pos.y, z: pos.z, rotateZ: pos.rotateZ, rotateX: pos.rotateX, scale: pos.scale, opacity: pos.opacity }}
+              exit={{ y: -250, x: isMobile ? -200 : -500, z: 200, rotateZ: -20, rotateX: 5, scale: 1.1, opacity: 0, zIndex: 50 }}
               transition={{ duration: 1.5, ease: [0.32, 0.72, 0, 1] }}
               whileHover={isTop ? {
-                y: pos.y - 12, scale: 1.03, rotateZ: -1, rotateX: 10,
-                boxShadow: "0 40px 60px rgba(0,0,0,0.7)", // PERBAIKAN
+                y: pos.y - 12, 
+                z: pos.z + 40, // Saat hover kartunya di-pop-up maju ke depan!
+                scale: 1.03, rotateZ: -1, rotateX: 10,
+                boxShadow: "0 40px 60px rgba(0,0,0,0.7)", 
                 transition: { duration: 0.3, ease: "easeOut" }
               } : {}}
             >
@@ -248,7 +253,6 @@ export default function Home() {
 
       if (pd) setPortfolios(pd);
       if (sd) {
-        // ALAT PENERJEMAH: Ubah string jadi Array dengan aman
         const safeParse = (val, fallback) => {
           if (!val) return fallback;
           if (Array.isArray(val)) return val;
@@ -264,8 +268,6 @@ export default function Home() {
           about_name: sd.about_name || DEFAULT.about_name,
           about_role: sd.about_role || DEFAULT.about_role,
           about_photo_url: sd.about_photo_url || DEFAULT.about_photo_url,
-
-          // Gunakan alat penerjemah di sini
           about_skills: safeParse(sd.about_skills, DEFAULT.about_skills),
           about_stats: safeParse(sd.about_stats, DEFAULT.about_stats),
         });
@@ -339,7 +341,9 @@ export default function Home() {
         .nc{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:10px 22px;border:1px solid var(--ab);color:var(--accent);background:transparent;transition:all .25s;text-decoration:none}
         .nc:hover{background:var(--accent);color:var(--bg)}
         
-        .hero{min-height:100vh;display:flex;flex-direction:row;align-items:center;padding:130px 48px 80px;position:relative;overflow:hidden}
+        /* PERBAIKAN 3: overflow:hidden DIHAPUS supaya kartu aman gak kepotong pas scroll */
+        .hero{min-height:100vh;display:flex;flex-direction:row;align-items:center;padding:130px 48px 80px;position:relative;}
+        
         .hbg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 70% 40%,var(--ag) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 20% 80%,var(--ag) 0%,transparent 60%)}
         .hl{position:absolute;top:0;left:48px;width:1px;height:40%;background:linear-gradient(to bottom,transparent,var(--border))}
         .hcontent{display:flex;flex-direction:column;justify-content:center;flex:0 0 auto;width:clamp(340px,40%,520px);position:relative;z-index:2}
@@ -385,7 +389,6 @@ export default function Home() {
         .wi:hover .wp{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
         .wnum{position:absolute;top:16px;left:16px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--am);z-index:2}
         
-        /* ── CSS TAMBAHAN UNTUK ABOUT SECTION ── */
         .as { padding: 120px 48px; border-top: 1px solid var(--border); display: flex; justify-content: center; }
         .ac { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; max-width: 1200px; width: 100%; align-items: center; }
         .ai { position: relative; aspect-ratio: 3/4; border-radius: 16px; overflow: hidden; background: var(--surface); }
@@ -419,7 +422,7 @@ export default function Home() {
         
         @media(max-width:768px){
           nav{padding:24px}
-          .hero{padding:100px 24px 220px;flex-direction:column;align-items:flex-start;min-height:0;overflow:hidden}
+          .hero{padding:100px 24px 220px;flex-direction:column;align-items:flex-start;min-height:0;overflow:visible}
           .hcontent{width:100%;min-width:unset}
           .ht{font-size:clamp(52px,14vw,80px)}
           .hcg{margin-top:28px;gap:12px}
@@ -503,7 +506,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── BAGIAN ABOUT SECTION BARU ── */}
         <section className="as" id="about">
           <div className="ac">
             <div className="ai">
@@ -519,7 +521,6 @@ export default function Home() {
               <p className="at-sub" style={{ marginBottom: "24px", color: "var(--text)" }}>{settings.about_role}</p>
               <p className="at-desc">{settings.about_text}</p>
 
-              {/* Looping Stats JSON dari Supabase */}
               {settings.about_stats && settings.about_stats.length > 0 && (
                 <div className="as-stats">
                   {settings.about_stats.map((stat, i) => (
@@ -531,7 +532,6 @@ export default function Home() {
                 </div>
               )}
 
-              {/* Looping Skills dari Supabase */}
               {settings.about_skills && settings.about_skills.length > 0 && (
                 <div className="as-skills">
                   {settings.about_skills.map((skill, i) => (
@@ -543,7 +543,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ID 'about' udah dipindah ke section atas, footer sekarang bebas */}
         <footer>
           <p className="fc">© {new Date().getFullYear()} Migi Gustian. All rights reserved.</p>
           <div className="fs">
