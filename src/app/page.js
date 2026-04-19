@@ -506,21 +506,10 @@ export default function Home() {
                       src={`https://img.youtube.com/vi/${ytID}/maxresdefault.jpg`}
                       alt={item.title}
                       className="wt"
-                      onError={(e) => {
-                        const currentSrc = e.currentTarget.src;
-
-                        if (currentSrc.includes("maxresdefault.jpg")) {
-                          // Fallback 1: High Quality
+                      onLoad={(e) => {
+                        // Ngecek apakah ini gambar abu-abu tipu-tipu dari YouTube (lebarnya 120px)
+                        if (e.currentTarget.naturalWidth === 120) {
                           e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/hqdefault.jpg`;
-                        } else if (currentSrc.includes("hqdefault.jpg")) {
-                          // Fallback 2: Medium Quality
-                          e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/mqdefault.jpg`;
-                        } else if (currentSrc.includes("mqdefault.jpg")) {
-                          // Fallback 3: Jurus Pamungkas (Player Default)
-                          e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/0.jpg`;
-                        } else {
-                          // Nyerah biar nggak infinite loop
-                          e.currentTarget.onerror = null;
                         }
                       }}
                     />
