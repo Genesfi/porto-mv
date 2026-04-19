@@ -522,21 +522,37 @@ export default function Home() {
                       }}
                     />
                   )}
-                  <div>
-                    <p className="wc">{item.category}</p>
-                    <h3 className="wn">
-                      {item.title ? (
-                        <>
-                          {/* Ambil kata pertama */}
-                          {item.title.split(' ')[0]}
-                          {' '}
-                          {/* Sisanya (jika ada) dibungkus tag <em> biar kena style miring kuning */}
-                          {item.title.split(' ').slice(1).join(' ') && (
-                            <em>{item.title.split(' ').slice(1).join(' ')}</em>
-                          )}
-                        </>
-                      ) : 'Untitled'}
-                    </h3>
+                  <div className="wo">
+                    <div>
+                      <p className="wc">{item.category}</p>
+                      <h3 className="wn">
+                        {(() => {
+                          if (!item.title) return 'Untitled';
+                          const t = item.title.trim();
+
+                          // Deteksi pintar: Kalau diawali kurung, ambil semua teks sampai kurung tutup
+                          if ((t.startsWith("【") && t.includes("】")) || (t.startsWith("[") && t.includes("]"))) {
+                            const closeChar = t.startsWith("【") ? "】" : "]";
+                            const idx = t.indexOf(closeChar);
+                            return (
+                              <>
+                                {t.substring(0, idx + 1)}
+                                {t.substring(idx + 1) && <em>{t.substring(idx + 1)}</em>}
+                              </>
+                            );
+                          }
+
+                          // Kalau judulnya biasa (nggak ada kurung di awal), pisah 2 kata pertama
+                          const w = t.split(" ");
+                          return (
+                            <>
+                              {w.slice(0, 2).join(" ")}
+                              {w.length > 2 && <em>{' ' + w.slice(2).join(" ")}</em>}
+                            </>
+                          );
+                        })()}
+                      </h3>
+                    </div>
                   </div>
                   <div className="wp"><svg width="14" height="16" viewBox="0 0 14 16"><path d="M0 0L14 8L0 16V0Z" /></svg></div>
                 </div>
