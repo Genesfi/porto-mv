@@ -493,7 +493,12 @@ export default function Home() {
             {filtered.map((item, i) => {
               const ytID = getYouTubeID(item.video_url);
               return (
-                <div key={item.id} className={getGridClass(i)} onClick={() => setSelectedVideo(ytID)}>
+                <div
+                  key={item.id}
+                  className={getGridClass(i)}
+                  onClick={() => setSelectedVideo(ytID)}
+                  style={(filtered.length < 3 && (i % 14 === 0 || i % 14 === 9)) ? { aspectRatio: '64/27' } : {}}
+                >
                   <span className="wnum">{String(i + 1).padStart(2, "0")}</span>
                   {ytID && <img src={`https://img.youtube.com/vi/${ytID}/maxresdefault.jpg`} alt={item.title} className="wt" />}
                   <div className="wo">
