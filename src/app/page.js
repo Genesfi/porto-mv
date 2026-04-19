@@ -381,10 +381,12 @@ export default function Home() {
         .r-norm{grid-column:span 3;aspect-ratio:16/9}
         .r3-banner{grid-column:1/5;aspect-ratio:64/27}
         .r3-big{grid-column:5/13;grid-row:span 2}
-        .wo{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.9) 0%,transparent 50%);opacity:0;transition:opacity .4s;display:flex;align-items:flex-end;padding:28px}
+        .wo{position:absolute;inset:0;background:rgba(0,0,0,0.15);opacity:0;transition:opacity .4s;display:flex;align-items:flex-end;padding:16px;}
         .wi:hover .wo{opacity:1}
-        .wc{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
-        .wn{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:26px;color:var(--white);letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+        .wo > div{background:rgba(12,12,12,0.65);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:16px 20px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);width:100%;transform:translateY(15px);transition:transform .4s cubic-bezier(.25,.46,.45,.94);}
+        .wi:hover .wo > div{transform:translateY(0);}
+        .wc{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;margin-bottom:8px;text-shadow:0 2px 4px rgba(0,0,0,0.5);}
+        .wn{font-family:system-ui,-apple-system,sans-serif;font-weight:600;font-size:clamp(15px,1.2vw,18px);line-height:1.4;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 4px rgba(0,0,0,0.5);}
         .wp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border:1px solid var(--am);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s,transform .3s}
         .wp svg{fill:var(--accent);margin-left:4px}
         .wi:hover .wp{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
