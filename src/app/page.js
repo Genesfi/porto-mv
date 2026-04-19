@@ -383,10 +383,15 @@ export default function Home() {
         .r3-big{grid-column:5/13;grid-row:span 2}
         .wo{position:absolute;inset:0;opacity:0;transition:opacity .4s;display:flex;align-items:flex-end;padding:0;overflow:hidden;}
         .wi:hover .wo{opacity:1;}
-        .wo > div{width:100%;padding:24px 20px;background:linear-gradient(to top, rgba(5,5,5,0.9) 0%, rgba(5,5,5,0.1) 100%);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,0.08);transform:translateY(30px);transition:transform .4s cubic-bezier(.25,.46,.45,.94);}
+        .wo > div{width:100%;padding:40px 20px 20px;background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%);display:flex;flex-direction:column;gap:8px;transform:translateY(20px);transition:transform .4s cubic-bezier(.25,.46,.45,.94);}
         .wi:hover .wo > div{transform:translateY(0);}
-        .wc{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
-        .wn{font-family:system-ui,-apple-system,sans-serif;font-weight:600;font-size:15px;line-height:1.4;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}.wp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border:1px solid var(--am);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s,transform .3s}
+
+        /* Kategori disulap jadi Badge Rounded Rectangle */
+        .wc{order:2;display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.1);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.05em;color:var(--text);margin:0;backdrop-filter:blur(4px);}
+
+        /* Judul pindah ke atas dengan teks tebal */
+        .wn{order:1;font-family:system-ui,-apple-system,sans-serif;font-weight:700;font-size:15px;line-height:1.3;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 4px rgba(0,0,0,0.8);margin:0;}
+        .wp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border:1px solid var(--am);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s,transform .3s}
         .wp svg{fill:var(--accent);margin-left:4px}
         .wi:hover .wp{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
         .wnum{position:absolute;top:16px;left:16px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--am);z-index:2}
