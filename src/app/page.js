@@ -375,7 +375,7 @@ export default function Home() {
         .wi{position:relative;overflow:hidden;background:var(--surface);cursor:none;min-height:0}
         .wt{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.25,.46,.45,.94),opacity .4s;opacity:.55}
         .wi:hover .wt{transform:scale(1.06);opacity:.85}
-        .r1-big{grid-column:1/9;grid-row:span 2;aspect-ratio:16/9;}
+        .r3-big{grid-column:5/13;grid-row:span 2;aspect-ratio:16/9;}
         .r1-banner{grid-column:9/13;aspect-ratio:64/27}
         .r-norm{grid-column:span 3;aspect-ratio:16/9}
         .r3-banner{grid-column:1/5;aspect-ratio:64/27}
