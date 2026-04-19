@@ -326,7 +326,8 @@ export default function Home() {
           --accent:${settings.accent_color};--am:${am};--ab:${ab};--ag:${ag};
           --white:${settings.text_color};
         }
-        body{background:var(--bg);color:var(--text);cursor:none;overflow-x:hidden}
+        html, body { max-width: 100vw; overflow-x: hidden; width: 100%; position: relative; }
+        body { background: var(--bg); color: var(--text); cursor: none; }
         .cr{position:fixed;top:0;left:0;width:32px;height:32px;border:1px solid var(--am);border-radius:50%;pointer-events:none;z-index:9999;will-change:transform}
         .cd{position:fixed;top:0;left:0;width:6px;height:6px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;will-change:transform}
         a,button{cursor:none}
@@ -434,7 +435,7 @@ export default function Home() {
           .ac { grid-template-columns: 1fr; gap: 48px; }
           .at-title { font-size: 42px; }
           .as-stats { grid-template-columns: repeat(2, 1fr); }
-          footer{padding:40px 24px;flex-direction:column;text-align:center}.nv{display:none}.hs{display:none}
+          footer{padding:40px 24px;flex-direction:column;text-align:center}.nv{display:none}.hs{display:none}.mb { padding: 16px; }
         }
       `}</style>
 
