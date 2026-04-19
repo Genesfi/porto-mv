@@ -386,11 +386,11 @@ export default function Home() {
         .wo > div{width:100%;padding:40px 20px 20px;background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%);display:flex;flex-direction:column;gap:8px;transform:translateY(20px);transition:transform .4s cubic-bezier(.25,.46,.45,.94);}
         .wi:hover .wo > div{transform:translateY(0);}
 
-        /* Kategori disulap jadi Badge Rounded Rectangle */
-        .wc{order:2;display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.1);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.05em;color:var(--text);margin:0;backdrop-filter:blur(4px);}
+        /* Kategori balikin warna kuning accent & background kaca kuning tipis */
+        .wc{order:2;display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:4px 12px;border-radius:6px;background:var(--ab);border:1px solid var(--am);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;color:var(--accent);margin:0;backdrop-filter:blur(4px);}
 
-        /* Judul pindah ke atas dengan teks tebal */
-        .wn{order:1;font-family:system-ui,-apple-system,sans-serif;font-weight:700;font-size:15px;line-height:1.3;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 4px rgba(0,0,0,0.8);margin:0;}
+        /* Judul balikin ke Cormorant Garamond biar senada sama UI web */
+        .wn{order:1;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:24px;line-height:1.2;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 6px rgba(0,0,0,0.9);margin:0;letter-spacing:0;}
         .wp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border:1px solid var(--am);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s,transform .3s}
         .wp svg{fill:var(--accent);margin-left:4px}
         .wi:hover .wp{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
