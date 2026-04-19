@@ -318,7 +318,7 @@ export default function Home() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap');
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
         :root{
           --bg:#080808;--surface:#0f0f0f;--border:rgba(255,255,255,0.1);
@@ -390,7 +390,7 @@ export default function Home() {
         .wc{order:2;display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:4px 12px;border-radius:6px;background:var(--ab);border:1px solid var(--am);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;color:var(--accent);margin:0;backdrop-filter:blur(4px);}
 
         /* Judul balikin ke Cormorant Garamond biar senada sama UI web */
-        .wn{order:1;font-family:'Cormorant Garamond',serif;font-weight:400;font-size:24px;line-height:1.2;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 6px rgba(0,0,0,0.9);margin:0;letter-spacing:0;}
+        .wn{order:1;font-family:'DM Serif Display',serif;font-weight:400;font-size:18px;line-height:1.3;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 6px rgba(0,0,0,0.85);margin:0;letter-spacing:0.02em;}
         .wp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border:1px solid var(--am);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s,transform .3s}
         .wp svg{fill:var(--accent);margin-left:4px}
         .wi:hover .wp{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
