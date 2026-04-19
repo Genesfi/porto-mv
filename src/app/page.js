@@ -383,7 +383,7 @@ export default function Home() {
         .wo{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.9) 0%,transparent 50%);opacity:0;transition:opacity .4s;display:flex;align-items:flex-end;padding:28px}
         .wi:hover .wo{opacity:1}
         .wc{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
-        .wn{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:26px;color:var(--white);letter-spacing:-.01em}
+        .wn{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:26px;color:var(--white);letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
         .wp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border:1px solid var(--am);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s,transform .3s}
         .wp svg{fill:var(--accent);margin-left:4px}
         .wi:hover .wp{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
