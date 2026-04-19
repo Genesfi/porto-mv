@@ -71,16 +71,16 @@ function BackgroundCardStack({ cards, paused }) {
 
   // PERBAIKAN 1: Tambah properti 'z' biar kartu dikasih jarak ke belakang layarnya
   const POSITIONS_BG_DESKTOP = [
-    { x: -250, y: 0,  z: 0,    rotateZ: 15, rotateX: -20, scale: 0.45, opacity: 0.20, zIndex: 4 },
-    { x: 0,    y: 30, z: -50,  rotateZ: 5,  rotateX: -15, scale: 0.4,  opacity: 0.12, zIndex: 3 },
-    { x: 250,  y: 50, z: -100, rotateZ: -5, rotateX: -10, scale: 0.35, opacity: 0.08, zIndex: 2 },
-    { x: 500,  y: 60, z: -150, rotateZ: -15,rotateX: -5,  scale: 0.3,  opacity: 0.03, zIndex: 1 },
+    { x: -250, y: 0, z: 0, rotateZ: 15, rotateX: -20, scale: 0.45, opacity: 0.20, zIndex: 4 },
+    { x: 0, y: 30, z: -50, rotateZ: 5, rotateX: -15, scale: 0.4, opacity: 0.12, zIndex: 3 },
+    { x: 250, y: 50, z: -100, rotateZ: -5, rotateX: -10, scale: 0.35, opacity: 0.08, zIndex: 2 },
+    { x: 500, y: 60, z: -150, rotateZ: -15, rotateX: -5, scale: 0.3, opacity: 0.03, zIndex: 1 },
   ];
   const POSITIONS_BG_MOBILE = [
-    { x: -120, y: 0,  z: 0,   rotateZ: 15, rotateX: -20, scale: 0.45, opacity: 0.55, zIndex: 4 },
-    { x: 0,    y: 15, z: -40, rotateZ: 5,  rotateX: -15, scale: 0.4,  opacity: 0.35, zIndex: 3 },
-    { x: 120,  y: 25, z: -80, rotateZ: -5, rotateX: -10, scale: 0.35, opacity: 0.20, zIndex: 2 },
-    { x: 230,  y: 30, z: -120,rotateZ: -15,rotateX: -5,  scale: 0.3,  opacity: 0.08, zIndex: 1 },
+    { x: -120, y: 0, z: 0, rotateZ: 15, rotateX: -20, scale: 0.45, opacity: 0.55, zIndex: 4 },
+    { x: 0, y: 15, z: -40, rotateZ: 5, rotateX: -15, scale: 0.4, opacity: 0.35, zIndex: 3 },
+    { x: 120, y: 25, z: -80, rotateZ: -5, rotateX: -10, scale: 0.35, opacity: 0.20, zIndex: 2 },
+    { x: 230, y: 30, z: -120, rotateZ: -15, rotateX: -5, scale: 0.3, opacity: 0.08, zIndex: 1 },
   ];
   const POSITIONS = isMobile ? POSITIONS_BG_MOBILE : POSITIONS_BG_DESKTOP;
 
@@ -110,8 +110,8 @@ function BackgroundCardStack({ cards, paused }) {
                 width: isMobile ? 160 : 400, height: isMobile ? 90 : 225,
                 borderRadius: 12,
                 overflow: "hidden",
-                boxShadow: "0 10px 20px rgba(0,0,0,0.5)", 
-                willChange: "transform, opacity", 
+                boxShadow: "0 10px 20px rgba(0,0,0,0.5)",
+                willChange: "transform, opacity",
                 transformOrigin: "center center",
                 zIndex: pos.zIndex,
               }}
@@ -158,17 +158,17 @@ function HeroCardStack({ cards, onCardClick, paused, isMobileOverride }) {
 
   // PERBAIKAN 2: Tambah 'z' jarak kedalaman. Makin ke belakang makin minus (-) nilainya.
   const POSITIONS_DESKTOP = [
-    { x: -140, y: -20, z: 0,    rotateZ: -5, rotateX: 18, scale: 1, opacity: 1, zIndex: 40 },
-    { x: 80,   y: 40,  z: -80,  rotateZ: 6,  rotateX: 25, scale: 0.9, opacity: 1, zIndex: 30 },
-    { x: 260,  y: 100, z: -160, rotateZ: 18, rotateX: 30, scale: 0.8, opacity: 1, zIndex: 20 },
-    { x: 420,  y: 150, z: -240, rotateZ: 28, rotateX: 34, scale: 0.7, opacity: 1, zIndex: 10 },
+    { x: -140, y: -20, z: 0, rotateZ: -5, rotateX: 18, scale: 1, opacity: 1, zIndex: 40 },
+    { x: 80, y: 40, z: -80, rotateZ: 6, rotateX: 25, scale: 0.9, opacity: 1, zIndex: 30 },
+    { x: 260, y: 100, z: -160, rotateZ: 18, rotateX: 30, scale: 0.8, opacity: 1, zIndex: 20 },
+    { x: 420, y: 150, z: -240, rotateZ: 28, rotateX: 34, scale: 0.7, opacity: 1, zIndex: 10 },
   ];
 
   const POSITIONS_MOBILE = [
-    { x: -60, y: -10, z: 0,    rotateZ: -5, rotateX: 18, scale: 1, opacity: 1, zIndex: 40 },
-    { x: 30,  y: 20,  z: -60,  rotateZ: 6,  rotateX: 25, scale: 0.9, opacity: 1, zIndex: 30 },
-    { x: 110, y: 50,  z: -120, rotateZ: 18, rotateX: 30, scale: 0.8, opacity: 1, zIndex: 20 },
-    { x: 185, y: 75,  z: -180, rotateZ: 28, rotateX: 34, scale: 0.7, opacity: 1, zIndex: 10 },
+    { x: -60, y: -10, z: 0, rotateZ: -5, rotateX: 18, scale: 1, opacity: 1, zIndex: 40 },
+    { x: 30, y: 20, z: -60, rotateZ: 6, rotateX: 25, scale: 0.9, opacity: 1, zIndex: 30 },
+    { x: 110, y: 50, z: -120, rotateZ: 18, rotateX: 30, scale: 0.8, opacity: 1, zIndex: 20 },
+    { x: 185, y: 75, z: -180, rotateZ: 28, rotateX: 34, scale: 0.7, opacity: 1, zIndex: 10 },
   ];
 
   const POSITIONS = isMobile ? POSITIONS_MOBILE : POSITIONS_DESKTOP;
@@ -208,7 +208,7 @@ function HeroCardStack({ cards, onCardClick, paused, isMobileOverride }) {
                 zIndex: pos.zIndex,
                 pointerEvents: "auto",
                 boxShadow: isTop ? "0 30px 40px rgba(0,0,0,0.55)" : "0 8px 16px rgba(0,0,0,0.35)",
-                willChange: "transform, opacity, box-shadow", 
+                willChange: "transform, opacity, box-shadow",
               }}
               // Animasikan properti Z-nya juga
               initial={{ y: 200, x: isMobile ? 300 : 600, z: -400, rotateZ: 35, rotateX: 45, scale: 0.6, opacity: 0 }}
@@ -216,10 +216,10 @@ function HeroCardStack({ cards, onCardClick, paused, isMobileOverride }) {
               exit={{ y: -250, x: isMobile ? -200 : -500, z: 200, rotateZ: -20, rotateX: 5, scale: 1.1, opacity: 0, zIndex: 50 }}
               transition={{ duration: 1.5, ease: [0.32, 0.72, 0, 1] }}
               whileHover={isTop ? {
-                y: pos.y - 12, 
+                y: pos.y - 12,
                 z: pos.z + 40, // Saat hover kartunya di-pop-up maju ke depan!
                 scale: 1.03, rotateZ: -1, rotateX: 10,
-                boxShadow: "0 40px 60px rgba(0,0,0,0.7)", 
+                boxShadow: "0 40px 60px rgba(0,0,0,0.7)",
                 transition: { duration: 0.3, ease: "easeOut" }
               } : {}}
             >
@@ -375,11 +375,11 @@ export default function Home() {
         .wi{position:relative;overflow:hidden;background:var(--surface);cursor:none;min-height:0}
         .wt{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.25,.46,.45,.94),opacity .4s;opacity:.55}
         .wi:hover .wt{transform:scale(1.06);opacity:.85}
-        .r1-big{grid-column:1/9;grid-row:span 2}
+        .r1-big{grid-column:1/9;grid-row:span 2;aspect-ratio:16/9;}
         .r1-banner{grid-column:9/13;aspect-ratio:64/27}
         .r-norm{grid-column:span 3;aspect-ratio:16/9}
         .r3-banner{grid-column:1/5;aspect-ratio:64/27}
-        .r3-big{grid-column:5/13;grid-row:span 2}
+        .r3-big{grid-column:5/13;grid-row:span 2;aspect-ratio:16/9;}
         .wo{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,.9) 0%,transparent 50%);opacity:0;transition:opacity .4s;display:flex;align-items:flex-end;padding:28px}
         .wi:hover .wo{opacity:1}
         .wc{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;margin-bottom:6px}
