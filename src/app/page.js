@@ -475,21 +475,27 @@ export default function Home() {
       .st{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:56px;line-height:1;color:var(--white);letter-spacing:-.02em}
       .st em{font-style:italic;color:var(--accent)}
       .sc{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--muted)}
-      .fb{display:flex;gap:4px;margin-bottom:48px;flex-wrap:wrap}
+
+      /* FIX: z-index supaya filter buttons tidak ketutup grid items */
+      .fb{display:flex;gap:4px;margin-bottom:48px;flex-wrap:wrap;position:relative;z-index:10;}
+
       .fb button{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:8px 20px;background:transparent;color:var(--muted);border:1px solid transparent;transition:all .2s}
       .fb button:hover{color:var(--text);border-color:var(--border)}
       .fb button.active{color:var(--bg);background:var(--accent);border-color:var(--accent)}
       .wg{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-flow:dense;gap:2px}
 
+      /* FIX: pointer-events:none saat belum revealed agar tidak menghalangi klik filter */
       .wi{
         position:relative;overflow:hidden;background:var(--surface);cursor:none;min-height:0;
         opacity:0;
         transform:translateY(32px);
         transition:opacity 0.65s ease, transform 0.65s ease;
+        pointer-events:none;
       }
       .wi.revealed{
         opacity:1;
         transform:translateY(0);
+        pointer-events:auto;
       }
 
       .wt{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.25,.46,.45,.94),opacity .4s;opacity:.55}
