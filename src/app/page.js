@@ -575,6 +575,7 @@ export default function Home() {
           <div className="nv">
             <a href="#works">Works</a>
             <a href="#about">About</a>
+            <a href="/waitlist">Waitlist</a>
             <a href="mailto:migi@email.com" className="nc">Get in Touch</a>
           </div>
         </nav>
@@ -638,6 +639,7 @@ export default function Home() {
             <p className="hd">{settings.about_text}</p>
             <div className="hcg">
               <button className="bp" onClick={() => document.getElementById("works")?.scrollIntoView({ behavior: "smooth" })}>View Works</button>
+              <button className="bg" onClick={() => window.location.href = '/waitlist'}>Waitlist</button>
               <button className="bg" onClick={handleShowReel} disabled={!settings.showreel_url}>Show Reel</button>
             </div>
           </div>
