@@ -45,7 +45,6 @@ function getGridClass(index) {
   return "wi r-norm";
 }
 
-// ── Background CardStack Component ──
 function BackgroundCardStack({ cards, paused }) {
   const [index, setIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -128,7 +127,6 @@ function BackgroundCardStack({ cards, paused }) {
   );
 }
 
-// ── Hero CardStack Component ──
 function HeroCardStack({ cards, onCardClick, paused, isMobileOverride }) {
   const [index, setIndex] = useState(0);
   const [isMobileInternal, setIsMobileInternal] = useState(false);
@@ -207,16 +205,11 @@ function HeroCardStack({ cards, onCardClick, paused, isMobileOverride }) {
                 boxShadow: "none",
               }}
               initial={{ y: 200, x: isMobile ? 300 : 600, z: -400, rotateZ: 35, rotateX: 45, rotateY: -60, scale: 0.6, opacity: 0 }}
-              animate={{
-                x: pos.x, y: pos.y, z: pos.z,
-                rotateZ: pos.rotateZ, rotateX: pos.rotateX, rotateY: pos.rotateY,
-                scale: pos.scale, opacity: pos.opacity
-              }}
+              animate={{ x: pos.x, y: pos.y, z: pos.z, rotateZ: pos.rotateZ, rotateX: pos.rotateX, rotateY: pos.rotateY, scale: pos.scale, opacity: pos.opacity }}
               exit={{ y: -250, x: isMobile ? -200 : -500, z: 200, rotateZ: -20, rotateX: 5, rotateY: 20, scale: 1.1, opacity: 0, zIndex: 50 }}
               transition={{ duration: 1.5, ease: [0.32, 0.72, 0, 1] }}
               whileHover={isTop ? {
-                y: pos.y - 12,
-                z: pos.z + 40,
+                y: pos.y - 12, z: pos.z + 40,
                 scale: 1.03, rotateZ: -1, rotateX: 10, rotateY: 0,
                 boxShadow: "none",
                 transition: { duration: 0.3, ease: "easeOut" }
@@ -239,6 +232,7 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [loaded, setLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const cursorRef = useRef(null);
   const cursorDotRef = useRef(null);
   const rafRef = useRef(null);
@@ -250,7 +244,6 @@ export default function Home() {
         supabase.from("portfolios").select("*").order("sort_order", { ascending: true }).order("id", { ascending: false }),
         supabase.from("site_settings").select("*").eq("id", 1).single(),
       ]);
-
       if (pd) setPortfolios(pd);
       if (sd) {
         const safeParse = (val, fallback) => {
@@ -279,10 +272,8 @@ export default function Home() {
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    // Custom cursor
     const move = (e) => {
-      const x = e.clientX;
-      const y = e.clientY;
+      const x = e.clientX, y = e.clientY;
       cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(() => {
         if (cursorRef.current) cursorRef.current.style.transform = `translate(${x - 16}px,${y - 16}px)`;
@@ -298,79 +289,54 @@ export default function Home() {
     };
   }, []);
 
-  // ── PARALLAX SCROLL: tiap kartu bergerak sendiri dengan speed berbeda ──
   useEffect(() => {
-    // Kartu depth-0 (paling depan/besar) paling lambat, depth-3 (paling belakang) paling cepat
-    // Efeknya: pas scroll, kartu belakang "jatuh" lebih cepat → kedalaman 3D makin kerasa
     const CARD_SPEEDS = [0.06, 0.13, 0.22, 0.34];
-
     const handleParallax = () => {
       cancelAnimationFrame(parallaxRafRef.current);
       parallaxRafRef.current = requestAnimationFrame(() => {
         const scrollY = window.scrollY;
-
-        // Tiap kartu digerakkan individual berdasarkan depth-nya
         CARD_SPEEDS.forEach((speed, depth) => {
-          const cards = document.querySelectorAll(`.hero-card-depth-${depth}`);
-          cards.forEach(card => {
+          document.querySelectorAll(`.hero-card-depth-${depth}`).forEach(card => {
             card.style.marginTop = `${scrollY * speed}px`;
           });
         });
-
-        // Background gradient bergerak lebih cepat dari semua kartu
         const hbg = document.querySelector('.hbg');
         if (hbg) hbg.style.transform = `translateY(${scrollY * 0.40}px)`;
-
-        // Garis SVG di tengah
         const wpSvg = document.querySelector('.wp-svg');
         if (wpSvg) wpSvg.style.transform = `translateY(${scrollY * 0.25}px)`;
-
-        // Teks hero paling lambat (ngambang, hampir diam)
         const hcontent = document.querySelector('.hcontent');
         if (hcontent) hcontent.style.transform = `translateY(${scrollY * 0.12}px)`;
       });
     };
-
     window.addEventListener('scroll', handleParallax, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleParallax);
-      cancelAnimationFrame(parallaxRafRef.current);
-    };
+    return () => { window.removeEventListener('scroll', handleParallax); cancelAnimationFrame(parallaxRafRef.current); };
   }, []);
 
-  // ── SCROLL REVEAL untuk grid portfolio ──
   useEffect(() => {
     if (!loaded) return;
-
-    // Delay sedikit supaya DOM sudah render setelah filter berubah
     const timer = setTimeout(() => {
       const items = document.querySelectorAll('.wi');
-
       const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('revealed');
-              observer.unobserve(entry.target);
-            }
-          });
-        },
+        (entries) => entries.forEach(entry => { if (entry.isIntersecting) { entry.target.classList.add('revealed'); observer.unobserve(entry.target); } }),
         { threshold: 0.10, rootMargin: '0px 0px -40px 0px' }
       );
-
       items.forEach((el, i) => {
-        // Reset dulu kalau sebelumnya sudah revealed (saat ganti filter)
         el.classList.remove('revealed');
-        // Delay per baris: tiap 4 item delay reset, max 320ms
         el.style.transitionDelay = `${(i % 4) * 80}ms`;
         observer.observe(el);
       });
-
       return () => observer.disconnect();
     }, 50);
-
     return () => clearTimeout(timer);
   }, [loaded, activeFilter]);
+
+  // Close menu on outside click
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handler = () => setMenuOpen(false);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [menuOpen]);
 
   const categories = ["All", ...Array.from(new Set(portfolios.map(p => p.category).filter(Boolean)))];
   const filtered = activeFilter === "All" ? portfolios : portfolios.filter(p => p.category === activeFilter);
@@ -390,6 +356,12 @@ export default function Home() {
     .map(p => { const id = getYouTubeID(p.video_url); return id ? { key: String(p.id), ytId: id, src: `https://img.youtube.com/vi/${id}/mqdefault.jpg` } : null; })
     .filter(Boolean);
 
+  const navLinks = [
+    { label: "Works", href: "#works" },
+    { label: "About", href: "#about" },
+    { label: "Waitlist", href: "/waitlist" },
+  ];
+
   return (
     <>
       <style>{`
@@ -401,42 +373,75 @@ export default function Home() {
         --accent:${settings.accent_color};--am:${am};--ab:${ab};--ag:${ag};
         --white:${settings.text_color};
       }
-      html, body { max-width: 100vw; overflow-x: hidden; width: 100%; position: relative; }
-      body { background: var(--bg); color: var(--text); cursor: none; }
+      html,body{max-width:100vw;overflow-x:hidden;width:100%;position:relative;}
+      body{background:var(--bg);color:var(--text);cursor:none;}
       .cr{position:fixed;top:0;left:0;width:32px;height:32px;border:1px solid var(--am);border-radius:50%;pointer-events:none;z-index:9999;will-change:transform}
       .cd{position:fixed;top:0;left:0;width:6px;height:6px;background:var(--accent);border-radius:50%;pointer-events:none;z-index:9999;will-change:transform}
       a,button{cursor:none}
       .page{opacity:0;transform:translateY(20px);transition:opacity .8s ease,transform .8s ease}
       .page.loaded{opacity:1;transform:translateY(0)}
-      nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:28px 48px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(8,8,8,.95),transparent)}
-      .nl{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;letter-spacing:.15em;color:var(--white);text-decoration:none}
+
+      /* ── NAV ── */
+      nav{
+        position:fixed;top:0;left:0;right:0;z-index:100;
+        padding:28px 48px;
+        display:flex;justify-content:space-between;align-items:center;
+        background:linear-gradient(to bottom,rgba(8,8,8,.95),transparent);
+      }
+      .nl{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;letter-spacing:.15em;color:var(--white);text-decoration:none;flex-shrink:0}
       .nl span{color:var(--accent);font-style:italic}
       .nv{display:flex;gap:36px;align-items:center}
       .nv a{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color .2s}
-      .nv a:hover{color:var(--accent)}
+      .nv a:hover,.nv a.active{color:var(--accent)}
       .nc{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:10px 22px;border:1px solid var(--ab);color:var(--accent);background:transparent;transition:all .25s;text-decoration:none}
       .nc:hover{background:var(--accent);color:var(--bg)}
+
+      /* ── HAMBURGER ── */
+      .ham{
+        display:none;
+        flex-direction:column;justify-content:center;align-items:center;
+        gap:5px;width:40px;height:40px;background:none;border:1px solid rgba(255,255,255,0.1);
+        border-radius:6px;padding:0;transition:border-color .2s;z-index:200;flex-shrink:0;
+      }
+      .ham:hover{border-color:var(--accent)}
+      .ham span{
+        display:block;width:18px;height:1px;background:var(--white);
+        transition:transform .3s ease, opacity .2s ease;transform-origin:center;
+      }
+      .ham.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+      .ham.open span:nth-child(2){opacity:0}
+      .ham.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+      /* ── MOBILE MENU OVERLAY ── */
+      .mob-menu{
+        display:none;
+        position:fixed;inset:0;z-index:150;
+        background:rgba(8,8,8,0.97);
+        flex-direction:column;align-items:center;justify-content:center;
+        gap:0;
+        backdrop-filter:blur(12px);
+      }
+      .mob-menu.open{display:flex}
+      .mob-menu a{
+        font-family:'Cormorant Garamond',serif;font-weight:300;font-size:52px;
+        color:var(--muted);text-decoration:none;letter-spacing:.05em;
+        padding:16px 0;transition:color .2s;border-bottom:1px solid rgba(255,255,255,0.06);
+        width:100%;text-align:center;
+      }
+      .mob-menu a:last-child{border-bottom:none}
+      .mob-menu a:hover,.mob-menu a.accent{color:var(--accent)}
+      .mob-menu-sub{
+        position:absolute;bottom:40px;
+        font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;
+        text-transform:uppercase;color:rgba(255,255,255,0.2);
+      }
+
+      /* ── HERO ── */
       .hero{min-height:100vh;display:flex;flex-direction:row;align-items:center;padding:130px 48px 80px;position:relative;}
       .hbg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 70% 40%,var(--ag) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 20% 80%,var(--ag) 0%,transparent 60%);will-change:transform}
-      @keyframes dash-flow {
-        to { stroke-dashoffset: -1000; }
-      }
-      .wp-svg {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        pointer-events: none;
-        z-index: 0;
-        opacity: 0.5;
-        will-change: transform;
-      }
-      .wp-path {
-        fill: none;
-        stroke: var(--accent);
-        stroke-width: 1.5px;
-        stroke-dasharray: 8 12;
-        animation: dash-flow 25s linear infinite;
-      }
+      @keyframes dash-flow{to{stroke-dashoffset:-1000}}
+      .wp-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.5;will-change:transform}
+      .wp-path{fill:none;stroke:var(--accent);stroke-width:1.5px;stroke-dasharray:8 12;animation:dash-flow 25s linear infinite}
       .hl{position:absolute;top:0;left:48px;width:1px;height:40%;background:linear-gradient(to bottom,transparent,var(--border))}
       .hcontent{display:flex;flex-direction:column;justify-content:center;flex:0 0 auto;width:clamp(340px,40%,520px);position:relative;z-index:3;will-change:transform}
       .he{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;margin-bottom:28px}
@@ -452,52 +457,24 @@ export default function Home() {
       .hs{display:flex;align-items:center;gap:14px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase;writing-mode:vertical-rl;position:absolute;right:48px;bottom:80px}
       .sl{width:1px;height:60px;background:linear-gradient(to bottom,var(--accent),transparent);animation:sla 2s ease-in-out infinite}
       @keyframes sla{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
+      .hero-stack-wrapper{position:absolute;inset:0;will-change:transform;pointer-events:none;z-index:1}
+      .hero-stack-wrapper>*{pointer-events:auto}
+      @keyframes rayPulse{0%,100%{opacity:.7}50%{opacity:1}}
 
-      .hero-stack-wrapper {
-        position: absolute;
-        inset: 0;
-        will-change: transform;
-        pointer-events: none;
-        z-index: 1;
-      }
-      .hero-stack-wrapper > * {
-        pointer-events: auto;
-      }
-
-      @keyframes rayPulse {
-        0%, 100% { opacity: 0.7; }
-        50%       { opacity: 1.0; }
-      }
-
+      /* ── WORKS ── */
       .ws{padding:120px 48px}
       .sh{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:64px;padding-bottom:24px;border-bottom:1px solid var(--border)}
       .slb{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;margin-bottom:10px}
       .st{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:56px;line-height:1;color:var(--white);letter-spacing:-.02em}
       .st em{font-style:italic;color:var(--accent)}
       .sc{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--muted)}
-
-      /* FIX: z-index supaya filter buttons tidak ketutup grid items */
-      .fb{display:flex;gap:4px;margin-bottom:48px;flex-wrap:wrap;position:relative;z-index:10;}
-
+      .fb{display:flex;gap:4px;margin-bottom:48px;flex-wrap:wrap;position:relative;z-index:10}
       .fb button{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:8px 20px;background:transparent;color:var(--muted);border:1px solid transparent;transition:all .2s}
       .fb button:hover{color:var(--text);border-color:var(--border)}
       .fb button.active{color:var(--bg);background:var(--accent);border-color:var(--accent)}
       .wg{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-flow:dense;gap:2px}
-
-      /* FIX: pointer-events:none saat belum revealed agar tidak menghalangi klik filter */
-      .wi{
-        position:relative;overflow:hidden;background:var(--surface);cursor:none;min-height:0;
-        opacity:0;
-        transform:translateY(32px);
-        transition:opacity 0.65s ease, transform 0.65s ease;
-        pointer-events:none;
-      }
-      .wi.revealed{
-        opacity:1;
-        transform:translateY(0);
-        pointer-events:auto;
-      }
-
+      .wi{position:relative;overflow:hidden;background:var(--surface);cursor:none;min-height:0;opacity:0;transform:translateY(32px);transition:opacity .65s ease,transform .65s ease;pointer-events:none}
+      .wi.revealed{opacity:1;transform:translateY(0);pointer-events:auto}
       .wt{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.25,.46,.45,.94),opacity .4s;opacity:.55}
       .wi:hover .wt{transform:scale(1.06);opacity:.85}
       .r1-big{grid-column:1/9;grid-row:span 2}
@@ -505,34 +482,36 @@ export default function Home() {
       .r-norm{grid-column:span 3;aspect-ratio:16/9}
       .r3-banner{grid-column:1/5;aspect-ratio:64/27}
       .r3-big{grid-column:5/13;grid-row:span 2}
-      .wo{position:absolute;inset:0;opacity:0;transition:opacity .4s;display:flex;align-items:flex-end;padding:0;overflow:hidden;}
-      .wi:hover .wo{opacity:1;}
-      .wo > div{width:100%;padding:40px 20px 20px;background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%);display:flex;flex-direction:column;gap:8px;transform:translateY(20px);transition:transform .4s cubic-bezier(.25,.46,.45,.94);}
-      .wi:hover .wo > div{transform:translateY(0);}
-      .wc{order:2;display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:4px 12px;border-radius:6px;background:var(--ab);border:1px solid var(--am);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;color:var(--accent);margin:0;backdrop-filter:blur(4px);}
-      .wn{order:1;font-family:'DM Serif Display',serif;font-weight:400;font-size:18px;line-height:1.3;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 6px rgba(0,0,0,0.85);margin:0;letter-spacing:0.02em;}
-      .wn em {font-family:'Cormorant Garamond',serif;font-weight:300;font-style:italic;font-size:1.4em;color:var(--accent);vertical-align:middle;}
+      .wo{position:absolute;inset:0;opacity:0;transition:opacity .4s;display:flex;align-items:flex-end;padding:0;overflow:hidden}
+      .wi:hover .wo{opacity:1}
+      .wo>div{width:100%;padding:40px 20px 20px;background:linear-gradient(to top,rgba(0,0,0,.95) 0%,rgba(0,0,0,0) 100%);display:flex;flex-direction:column;gap:8px;transform:translateY(20px);transition:transform .4s cubic-bezier(.25,.46,.45,.94)}
+      .wi:hover .wo>div{transform:translateY(0)}
+      .wc{order:2;display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:4px 12px;border-radius:6px;background:var(--ab);border:1px solid var(--am);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;color:var(--accent);margin:0;backdrop-filter:blur(4px)}
+      .wn{order:1;font-family:'DM Serif Display',serif;font-weight:400;font-size:18px;line-height:1.3;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 6px rgba(0,0,0,.85);margin:0;letter-spacing:.02em}
+      .wn em{font-family:'Cormorant Garamond',serif;font-weight:300;font-style:italic;font-size:1.4em;color:var(--accent);vertical-align:middle}
       .wp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border:1px solid var(--am);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s,transform .3s}
       .wp svg{fill:var(--accent);margin-left:4px}
       .wi:hover .wp{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
       .wnum{position:absolute;top:16px;left:16px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--am);z-index:2}
 
-      .as { padding: 120px 48px; border-top: 1px solid var(--border); display: flex; justify-content: center; }
-      .ac { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; max-width: 1200px; width: 100%; align-items: center; }
-      .ai { position: relative; aspect-ratio: 3/4; border-radius: 16px; overflow: hidden; background: var(--surface); max-width: 320px; margin: 0 auto; }
-      .ai img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; filter: grayscale(20%); transition: all 0.5s; }
-      .ai:hover img { filter: grayscale(0%); opacity: 1; transform: scale(1.03); }
-      .at-sub { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.3em; color: var(--accent); text-transform: uppercase; margin-bottom: 20px; }
-      .at-title { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 56px; line-height: 1; color: var(--white); letter-spacing: -0.02em; margin-bottom: 32px; }
-      .at-title em { font-style: italic; color: var(--accent); }
-      .at-desc { font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.9; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 48px; white-space: pre-line; }
-      .as-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 48px; }
-      .stat-val { font-family: 'Cormorant Garamond', serif; font-size: 42px; color: var(--white); line-height: 1; margin-bottom: 8px; }
-      .stat-lbl { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
-      .as-skills { display: flex; flex-wrap: wrap; gap: 12px; }
-      .skill-tag { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; padding: 8px 16px; border: 1px solid var(--border); color: var(--text); border-radius: 4px; transition: all 0.2s; }
-      .skill-tag:hover { color: var(--bg); background: var(--accent); border-color: var(--accent); }
+      /* ── ABOUT ── */
+      .as{padding:120px 48px;border-top:1px solid var(--border);display:flex;justify-content:center}
+      .ac{display:grid;grid-template-columns:1fr 1fr;gap:80px;max-width:1200px;width:100%;align-items:center}
+      .ai{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:var(--surface);max-width:320px;margin:0 auto}
+      .ai img{width:100%;height:100%;object-fit:cover;opacity:.8;filter:grayscale(20%);transition:all .5s}
+      .ai:hover img{filter:grayscale(0%);opacity:1;transform:scale(1.03)}
+      .at-sub{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;margin-bottom:20px}
+      .at-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:56px;line-height:1;color:var(--white);letter-spacing:-.02em;margin-bottom:32px}
+      .at-title em{font-style:italic;color:var(--accent)}
+      .at-desc{font-family:'DM Mono',monospace;font-size:12px;line-height:1.9;color:var(--muted);letter-spacing:.04em;margin-bottom:48px;white-space:pre-line}
+      .as-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-bottom:48px}
+      .stat-val{font-family:'Cormorant Garamond',serif;font-size:42px;color:var(--white);line-height:1;margin-bottom:8px}
+      .stat-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+      .as-skills{display:flex;flex-wrap:wrap;gap:12px}
+      .skill-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:8px 16px;border:1px solid var(--border);color:var(--text);border-radius:4px;transition:all .2s}
+      .skill-tag:hover{color:var(--bg);background:var(--accent);border-color:var(--accent)}
 
+      /* ── MODAL ── */
       .mb{position:fixed;inset:0;z-index:200;background:rgba(4,4,4,.97);display:flex;align-items:center;justify-content:center;padding:40px;animation:fi .3s ease}
       @keyframes fi{from{opacity:0}to{opacity:1}}
       .mi{width:100%;max-width:1000px;animation:si .35s cubic-bezier(.34,1.56,.64,1)}
@@ -542,14 +521,18 @@ export default function Home() {
       .mc:hover{color:var(--accent)}
       .mv{position:relative;aspect-ratio:16/9;background:#000}
       .mv iframe{position:absolute;inset:0;width:100%;height:100%;border:none}
+
       footer{padding:60px 48px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
       .fc{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--muted)}
       .fs{display:flex;gap:24px;flex-wrap:wrap}
       .fs a{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--muted);text-decoration:none;text-transform:uppercase;transition:color .2s}
       .fs a:hover{color:var(--accent)}
 
+      /* ── MOBILE ── */
       @media(max-width:768px){
-        nav{padding:24px}
+        nav{padding:20px 24px}
+        .nv{display:none}
+        .ham{display:flex}
         .hero{padding:100px 24px 220px;flex-direction:column;align-items:flex-start;min-height:0;overflow:visible}
         .hcontent{width:100%;min-width:unset}
         .ht{font-size:clamp(52px,14vw,80px)}
@@ -558,79 +541,76 @@ export default function Home() {
         .ws{padding:80px 24px}
         .wg{grid-template-columns:1fr}
         .r1-big,.r1-banner,.r-norm,.r3-banner,.r3-big{grid-column:1/-1;grid-row:span 1;aspect-ratio:16/9}
-        .as { padding: 80px 24px; }
-        .ac { grid-template-columns: 1fr; gap: 48px; }
-        .at-title { font-size: 42px; }
-        .as-stats { grid-template-columns: repeat(2, 1fr); }
-        footer{padding:40px 24px;flex-direction:column;text-align:center}.nv{display:none}.hs{display:none}.mb { padding: 16px; }
+        .as{padding:80px 24px}
+        .ac{grid-template-columns:1fr;gap:48px}
+        .at-title{font-size:42px}
+        .as-stats{grid-template-columns:repeat(2,1fr)}
+        footer{padding:40px 24px;flex-direction:column;text-align:center}
+        .hs{display:none}
+        .mb{padding:16px}
       }
-    `}</style>
+      `}</style>
 
       <div ref={cursorRef} className="cr" />
       <div ref={cursorDotRef} className="cd" />
+
+      {/* Mobile overlay menu */}
+      <div className={`mob-menu ${menuOpen ? "open" : ""}`} onClick={() => setMenuOpen(false)}>
+        {navLinks.map(l => (
+          <a
+            key={l.label}
+            href={l.href}
+            className={l.href === "/waitlist" ? "accent" : ""}
+            onClick={() => setMenuOpen(false)}
+          >{l.label}</a>
+        ))}
+        <span className="mob-menu-sub">© {new Date().getFullYear()} Migi Gustian</span>
+      </div>
 
       <div className={`page ${loaded ? "loaded" : ""}`}>
         <nav>
           <a href="/" className="nl">Migi <span>Gustian</span></a>
           <div className="nv">
-            <a href="#works">Works</a>
-            <a href="#about">About</a>
-            <a href="/waitlist">Waitlist</a>
+            {navLinks.map(l => (
+              <a key={l.label} href={l.href} className={l.href === "/waitlist" ? "active" : ""}>{l.label}</a>
+            ))}
             <a href="mailto:migi@email.com" className="nc">Get in Touch</a>
           </div>
+          {/* Hamburger — mobile only */}
+          <button
+            className={`ham ${menuOpen ? "open" : ""}`}
+            onClick={e => { e.stopPropagation(); setMenuOpen(o => !o); }}
+            aria-label="Menu"
+          >
+            <span /><span /><span />
+          </button>
         </nav>
 
         <section className="hero">
           <div className="hbg" />
           <div className="hl" />
-
           <svg className="wp-svg" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMid slice">
-            <path
-              className="wp-path"
-              d="M-50,450 C250,450 300,700 600,600 C850,500 750,200 950,250 C1150,300 1200,600 1500,450"
-            />
+            <path className="wp-path" d="M-50,450 C250,450 300,700 600,600 C850,500 750,200 950,250 C1150,300 1200,600 1500,450" />
           </svg>
 
-          {/* Semua kartu dibungkus hero-stack-wrapper untuk parallax bersama */}
           <div className="hero-stack-wrapper">
-            {heroCards.length > 0 && (
-              <BackgroundCardStack cards={heroCards} paused={!!selectedVideo} />
-            )}
-
-            {/* Sun rays */}
-            <div style={{
-              position: "absolute",
-              left: isMobile ? "20%" : "40%",
-              top: "-10%",
-              width: isMobile ? "120%" : "80%",
-              height: "130%",
-              pointerEvents: "none",
-              zIndex: 2,
-              overflow: "hidden",
-            }}>
+            {heroCards.length > 0 && <BackgroundCardStack cards={heroCards} paused={!!selectedVideo} />}
+            <div style={{ position: "absolute", left: isMobile ? "20%" : "40%", top: "-10%", width: isMobile ? "120%" : "80%", height: "130%", pointerEvents: "none", zIndex: 2, overflow: "hidden" }}>
               {[
                 { left: "30%", width: "180px", rotate: "25deg", opacity: 0.13, delay: "0s" },
                 { left: "44%", width: "80px", rotate: "25deg", opacity: 0.09, delay: "0.4s" },
                 { left: "52%", width: "320px", rotate: "25deg", opacity: 0.07, delay: "0.8s" },
               ].map((ray, i) => (
                 <div key={i} style={{
-                  position: "absolute",
-                  top: 0,
-                  left: ray.left,
-                  width: ray.width,
-                  height: "100%",
+                  position: "absolute", top: 0, left: ray.left, width: ray.width, height: "100%",
                   background: `linear-gradient(to bottom, rgba(${rgb || "212,180,80"}, ${ray.opacity}), transparent 70%)`,
-                  transform: `rotate(${ray.rotate})`,
-                  transformOrigin: "top center",
+                  transform: `rotate(${ray.rotate})`, transformOrigin: "top center",
                   animation: `rayPulse 4s ease-in-out ${ray.delay} infinite`,
-                  borderRadius: "50%",
-                  filter: "blur(18px)",
+                  borderRadius: "50%", filter: "blur(18px)",
                 }} />
               ))}
             </div>
-            {heroCards.length > 0 && (
-              <HeroCardStack cards={heroCards} onCardClick={setSelectedVideo} paused={!!selectedVideo} isMobileOverride={isMobile} />
-            )}
+            {heroCards.length > 0 && <HeroCardStack cards={heroCards} onCardClick={setSelectedVideo} paused={!!selectedVideo} isMobileOverride={isMobile} />}
           </div>
 
           <div className="hcontent">
@@ -664,24 +644,12 @@ export default function Home() {
             {filtered.map((item, i) => {
               const ytID = getYouTubeID(item.video_url);
               return (
-                <div
-                  key={item.id}
-                  className={getGridClass(i)}
-                  onClick={() => setSelectedVideo(ytID)}
-                  style={(i % 14 === 0 && i + 2 >= filtered.length) ? { aspectRatio: '64/27' } : {}}
-                >
+                <div key={item.id} className={getGridClass(i)} onClick={() => setSelectedVideo(ytID)}
+                  style={(i % 14 === 0 && i + 2 >= filtered.length) ? { aspectRatio: '64/27' } : {}}>
                   <span className="wnum">{String(i + 1).padStart(2, "0")}</span>
                   {ytID && (
-                    <img
-                      src={`https://img.youtube.com/vi/${ytID}/maxresdefault.jpg`}
-                      alt={item.title}
-                      className="wt"
-                      onLoad={(e) => {
-                        if (e.currentTarget.naturalWidth === 120) {
-                          e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/hqdefault.jpg`;
-                        }
-                      }}
-                    />
+                    <img src={`https://img.youtube.com/vi/${ytID}/maxresdefault.jpg`} alt={item.title} className="wt"
+                      onLoad={e => { if (e.currentTarget.naturalWidth === 120) e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/hqdefault.jpg`; }} />
                   )}
                   <div className="wo">
                     <div>
@@ -691,22 +659,12 @@ export default function Home() {
                           if (!item.title) return 'Untitled';
                           const t = item.title.trim();
                           if ((t.startsWith("【") && t.includes("】")) || (t.startsWith("[") && t.includes("]"))) {
-                            const closeChar = t.startsWith("【") ? "】" : "]";
-                            const idx = t.indexOf(closeChar);
-                            return (
-                              <>
-                                {t.substring(0, idx + 1)}
-                                {t.substring(idx + 1) && <em>{t.substring(idx + 1)}</em>}
-                              </>
-                            );
+                            const cc = t.startsWith("【") ? "】" : "]";
+                            const idx = t.indexOf(cc);
+                            return <>{t.substring(0, idx + 1)}{t.substring(idx + 1) && <em>{t.substring(idx + 1)}</em>}</>;
                           }
                           const w = t.split(" ");
-                          return (
-                            <>
-                              {w.slice(0, 2).join(" ")}
-                              {w.length > 2 && <em>{' ' + w.slice(2).join(" ")}</em>}
-                            </>
-                          );
+                          return <>{w.slice(0, 2).join(" ")}{w.length > 2 && <em>{' ' + w.slice(2).join(" ")}</em>}</>;
                         })()}
                       </h3>
                     </div>
@@ -721,34 +679,25 @@ export default function Home() {
         <section className="as" id="about">
           <div className="ac">
             <div className="ai">
-              {settings.about_photo_url ? (
-                <img src={settings.about_photo_url} alt={settings.about_name} />
-              ) : (
-                <div style={{ width: "100%", height: "100%", background: "var(--surface)" }} />
-              )}
+              {settings.about_photo_url
+                ? <img src={settings.about_photo_url} alt={settings.about_name} />
+                : <div style={{ width: "100%", height: "100%", background: "var(--surface)" }} />}
             </div>
             <div className="at">
               <p className="at-sub">Behind The Motion</p>
               <h2 className="at-title">Hello, I'm <em>{settings.about_name}</em>.</h2>
               <p className="at-sub" style={{ marginBottom: "24px", color: "var(--text)" }}>{settings.about_role}</p>
               <p className="at-desc">{settings.about_text}</p>
-
-              {settings.about_stats && settings.about_stats.length > 0 && (
+              {settings.about_stats?.length > 0 && (
                 <div className="as-stats">
                   {settings.about_stats.map((stat, i) => (
-                    <div key={i}>
-                      <div className="stat-val">{stat.value}</div>
-                      <div className="stat-lbl">{stat.label}</div>
-                    </div>
+                    <div key={i}><div className="stat-val">{stat.value}</div><div className="stat-lbl">{stat.label}</div></div>
                   ))}
                 </div>
               )}
-
-              {settings.about_skills && settings.about_skills.length > 0 && (
+              {settings.about_skills?.length > 0 && (
                 <div className="as-skills">
-                  {settings.about_skills.map((skill, i) => (
-                    <div key={i} className="skill-tag">{skill}</div>
-                  ))}
+                  {settings.about_skills.map((skill, i) => <div key={i} className="skill-tag">{skill}</div>)}
                 </div>
               )}
             </div>
@@ -760,8 +709,7 @@ export default function Home() {
           <div className="fs">
             {settings.socials.length > 0
               ? settings.socials.map((s, i) => <a key={i} href={s.url} target="_blank" rel="noopener noreferrer">{s.platform}</a>)
-              : <><a href="#">YouTube</a><a href="#">Instagram</a><a href="#">Behance</a></>
-            }
+              : <><a href="#">YouTube</a><a href="#">Instagram</a><a href="#">Behance</a></>}
           </div>
         </footer>
       </div>
