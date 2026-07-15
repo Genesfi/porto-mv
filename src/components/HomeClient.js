@@ -234,7 +234,7 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
   const parallaxRafRef = useRef(null);
 
   useEffect(() => {
-    setLoaded(true);
+    setTimeout(() => setLoaded(true), 100);
 
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
@@ -366,107 +366,105 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
 
       /* ── HAMBURGER ── */
       .ham{
-        display:none;flex-direction:column;gap:5px;background:none;border:none;padding:10px;z-index:110;
+        display:none;
+        flex-direction:column;justify-content:center;align-items:center;
+        gap:5px;width:40px;height:40px;background:none;border:1px solid rgba(255,255,255,0.1);
+        border-radius:6px;padding:0;transition:border-color .2s;z-index:200;flex-shrink:0;
       }
-      .ham span{width:22px;height:1px;background:var(--muted);transition:all .3s ease-in-out}
-      .ham.open span:nth-child(1){transform:translateY(6px) rotate(45deg);background:#fff}
+      .ham:hover{border-color:var(--accent)}
+      .ham span{
+        display:block;width:18px;height:1px;background:var(--white);
+        transition:transform .3s ease, opacity .2s ease;transform-origin:center;
+      }
+      .ham.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
       .ham.open span:nth-child(2){opacity:0}
-      .ham.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg);background:#fff}
+      .ham.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
 
-      /* ── MOBILE OVERLAY MENU ── */
+      /* ── MOBILE MENU OVERLAY ── */
       .mob-menu{
-        position:fixed;inset:0;z-index:105;background:rgba(8,8,8,0.98);
-        display:flex;flex-direction:column;justify-content:center;align-items:center;gap:32px;
-        opacity:0;pointer-events:none;transition:opacity .4s ease-in-out;
+        display:none;
+        position:fixed;inset:0;z-index:150;
+        background:rgba(8,8,8,0.97);
+        flex-direction:column;align-items:center;justify-content:center;
+        gap:0;
+        backdrop-filter:blur(12px);
       }
-      .mob-menu.open{opacity:1;pointer-events:auto}
+      .mob-menu.open{display:flex}
       .mob-menu a{
-        font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;color:var(--muted);
-        text-decoration:none;letter-spacing:.05em;transition:color .3s;
+        font-family:'Cormorant Garamond',serif;font-weight:300;font-size:52px;
+        color:var(--muted);text-decoration:none;letter-spacing:.05em;
+        padding:16px 0;transition:color .2s;border-bottom:1px solid rgba(255,255,255,0.06);
+        width:100%;text-align:center;
       }
+      .mob-menu a:last-child{border-bottom:none}
       .mob-menu a:hover,.mob-menu a.accent{color:var(--accent)}
       .mob-menu-sub{
-        position:absolute;bottom:40px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;color:rgba(255,255,255,0.15);text-transform:uppercase;
+        position:absolute;bottom:40px;
+        font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;
+        text-transform:uppercase;color:rgba(255,255,255,0.2);
       }
 
       /* ── HERO ── */
-      .hero{
-        min-height:100vh;height:100vh;position:relative;
-        display:flex;align-items:center;
-        padding:0 80px;background:#080808;
-        overflow:hidden;
-      }
-      .hbg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 75% 50%,rgba(var(--accent-rgb),0.075) 0%,transparent 80%);z-index:0;will-change:transform}
-      .hl{position:absolute;left:10%;top:0;width:1px;height:100%;background:linear-gradient(to bottom,transparent,rgba(255,255,255,0.03) 30%,rgba(255,255,255,0.03) 70%,transparent);z-index:0}
-      
-      .wp-svg{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.65;will-change:transform}
-      .wp-path{fill:none;stroke:rgba(255,255,255,0.015);stroke-width:1;stroke-dasharray:10 5}
-
-      .hero-stack-wrapper{
-        position:absolute;right:0;top:0;width:55%;height:100%;
-        display:flex;align-items:center;justify-content:center;
-        z-index:1;
-      }
-      @media(max-width:768px){
-        .hero-stack-wrapper{
-          position:relative;width:100%;height:220px;margin-top:40px;order:2;right:unset;top:unset;
-        }
-      }
-
-      .hcontent{width:45%;position:relative;z-index:10;pointer-events:auto;will-change:transform}
-      .he{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--accent);margin-bottom:20px;opacity:.9}
-      .ht{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(64px,7.5vw,96px);line-height:.95;color:var(--white);letter-spacing:-.03em}
-      .ht em{font-style:italic;color:var(--accent);font-weight:300}
-      .hd{font-family:'DM Mono',monospace;font-size:11px;line-height:1.9;color:var(--muted);margin-top:28px;max-width:440px;letter-spacing:.04em;font-weight:300}
-      .hcg{margin-top:44px;display:flex;gap:20px;align-items:center}
-      .bp{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:14px 28px;background:var(--accent);color:#080808;border:none;transition:all .25s;font-weight:500}
-      .bp:hover{background:#fff}
-      .bg{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:14px 28px;background:transparent;border:1px solid var(--border);color:var(--text);transition:all .25s}
+      .hero{min-height:100vh;display:flex;flex-direction:row;align-items:center;padding:130px 48px 80px;position:relative;}
+      .hbg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 80% 60% at 70% 40%,var(--ag) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 20% 80%,var(--ag) 0%,transparent 60%);will-change:transform}
+      @keyframes dash-flow{to{stroke-dashoffset:-1000}}
+      .wp-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:0.5;will-change:transform}
+      .wp-path{fill:none;stroke:var(--accent);stroke-width:1.5px;stroke-dasharray:8 12;animation:dash-flow 25s linear infinite}
+      .hl{position:absolute;top:0;left:48px;width:1px;height:40%;background:linear-gradient(to bottom,transparent,var(--border))}
+      .hcontent{display:flex;flex-direction:column;justify-content:center;flex:0 0 auto;width:clamp(340px,40%,520px);position:relative;z-index:3;will-change:transform}
+      .he{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;margin-bottom:28px}
+      .ht{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(70px,9vw,148px);line-height:.9;letter-spacing:-.02em;color:var(--white)}
+      .ht em{font-style:italic;color:var(--accent)}
+      .hd{font-family:'DM Mono',monospace;font-size:12px;line-height:1.9;color:var(--muted);max-width:360px;letter-spacing:.04em;margin-top:36px}
+      .hcg{display:flex;gap:16px;margin-top:48px}
+      .bp{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.25em;text-transform:uppercase;padding:14px 32px;background:var(--accent);color:var(--bg);border:none;transition:all .25s}
+      .bp:hover{background:var(--white)}
+      .bg{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.25em;text-transform:uppercase;padding:14px 32px;background:transparent;color:var(--muted);border:1px solid var(--border);transition:all .25s}
       .bg:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
-      .bg:disabled{opacity:0.3;cursor:not-allowed}
-
-      .hs{position:absolute;bottom:48px;left:80px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:16px;z-index:10}
-      .sl{width:40px;height:1px;background:var(--border)}
+      .bg:disabled{opacity:.3}
+      .hs{display:flex;align-items:center;gap:14px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.3em;color:var(--muted);text-transform:uppercase;writing-mode:vertical-rl;position:absolute;right:48px;bottom:80px}
+      .sl{width:1px;height:60px;background:linear-gradient(to bottom,var(--accent),transparent);animation:sla 2s ease-in-out infinite}
+      @keyframes sla{0%,100%{opacity:.3;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
+      .hero-stack-wrapper{position:absolute;inset:0;will-change:transform;pointer-events:none;z-index:1}
+      .hero-stack-wrapper>*{pointer-events:auto}
+      @keyframes rayPulse{0%,100%{opacity:.7}50%{opacity:1}}
 
       /* ── WORKS ── */
-      .ws{padding:120px 80px;position:relative;z-index:10;background:#080808}
-      .sh{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:60px;border-bottom:1px solid var(--border);padding-bottom:28px}
-      .slb{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
-      .st{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:48px;line-height:1;color:var(--white);letter-spacing:-.02em}
+      .ws{padding:120px 48px}
+      .sh{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:64px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+      .slb{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--accent);text-transform:uppercase;margin-bottom:10px}
+      .st{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:56px;line-height:1;color:var(--white);letter-spacing:-.02em}
       .st em{font-style:italic;color:var(--accent)}
-      .sc{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase}
-
-      .fb{display:flex;gap:12px;margin-bottom:48px;flex-wrap:wrap}
-      .fb button{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;padding:8px 18px;background:transparent;border:1px solid var(--border);color:var(--muted);transition:all .2s}
-      .fb button:hover,.fb button.active{border-color:var(--accent);color:var(--accent);background:var(--ag)}
-
-      .wg{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-flow:dense;gap:20px}
-      .wi{position:relative;background:var(--surface);border:1px solid var(--border);overflow:hidden;opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(0.16, 1, 0.3, 1),transform .8s cubic-bezier(0.16, 1, 0.3, 1);display:flex;flex-direction:column;justify-content:flex-end}
-      .wi.revealed{opacity:1;transform:translateY(0)}
-      .wi::after{content:'';position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,8,0.85) 0%,rgba(8,8,8,0.2) 50%,transparent 100%);z-index:2;opacity:.8;transition:opacity .3s}
-      .wi:hover::after{opacity:.95}
-
-      .r1-big{grid-column:span 2;grid-row:span 2;aspect-ratio:1/1}
-      .r1-banner{grid-column:span 2;grid-row:span 1;aspect-ratio:21/9}
-      .r-norm{grid-column:span 1;grid-row:span 1;aspect-ratio:3/4}
-      .r3-banner{grid-column:span 2;grid-row:span 1;aspect-ratio:21/9}
-      .r3-big{grid-column:span 2;grid-row:span 2;aspect-ratio:1/1}
-
-      .wt{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;opacity:.65;filter:grayscale(15%) contrast(1.05);transition:all .6s cubic-bezier(0.16, 1, 0.3, 1)}
-      .wi:hover .wt{transform:scale(1.03) rotate(0.5deg);opacity:.85;filter:grayscale(0%) contrast(1)}
-
-      .wo{position:relative;z-index:3;padding:32px;pointer-events:none}
-      .wc{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
-      .wn{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:28px;line-height:1.1;color:#fff;letter-spacing:-.01em}
-      .wn em{font-style:italic;color:var(--muted);font-weight:300}
-      .wp{position:absolute;top:32px;right:32px;z-index:3;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0.8);transition:all .3s;pointer-events:none}
-      .wp svg{fill:var(--accent);transition:transform .3s}
-      .wi:hover .wp{opacity:1;transform:scale(1)}
-      .wi:hover .wp svg{transform:translateX(1px)}
+      .sc{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.2em;color:var(--muted)}
+      .fb{display:flex;gap:4px;margin-bottom:48px;flex-wrap:wrap;position:relative;z-index:10}
+      .fb button{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:8px 20px;background:transparent;color:var(--muted);border:1px solid transparent;transition:all .2s}
+      .fb button:hover{color:var(--text);border-color:var(--border)}
+      .fb button.active{color:var(--bg);background:var(--accent);border-color:var(--accent)}
+      .wg{display:grid;grid-template-columns:repeat(12,1fr);grid-auto-flow:dense;gap:2px}
+      .wi{position:relative;overflow:hidden;background:var(--surface);cursor:none;min-height:0;opacity:0;transform:translateY(32px);transition:opacity .65s ease,transform .65s ease;pointer-events:none}
+      .wi.revealed{opacity:1;transform:translateY(0);pointer-events:auto}
+      .wt{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.25,.46,.45,.94),opacity .4s;opacity:.55}
+      .wi:hover .wt{transform:scale(1.06);opacity:.85}
+      .r1-big{grid-column:1/9;grid-row:span 2}
+      .r1-banner{grid-column:9/13;aspect-ratio:64/27}
+      .r-norm{grid-column:span 3;aspect-ratio:16/9}
+      .r3-banner{grid-column:1/5;aspect-ratio:64/27}
+      .r3-big{grid-column:5/13;grid-row:span 2}
+      .wo{position:absolute;inset:0;opacity:0;transition:opacity .4s;display:flex;align-items:flex-end;padding:0;overflow:hidden}
+      .wi:hover .wo{opacity:1}
+      .wo>div{width:100%;padding:40px 20px 20px;background:linear-gradient(to top,rgba(0,0,0,.95) 0%,rgba(0,0,0,0) 100%);display:flex;flex-direction:column;gap:8px;transform:translateY(20px);transition:transform .4s cubic-bezier(.25,.46,.45,.94)}
+      .wi:hover .wo>div{transform:translateY(0)}
+      .wc{order:2;display:inline-flex;align-items:center;justify-content:center;width:max-content;padding:4px 12px;border-radius:6px;background:var(--ab);border:1px solid var(--am);font-family:'DM Mono',monospace;font-size:10px;font-weight:500;letter-spacing:.1em;color:var(--accent);margin:0;backdrop-filter:blur(4px)}
+      .wn{order:1;font-family:'DM Serif Display',serif;font-weight:400;font-size:18px;line-height:1.3;color:var(--white);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;text-shadow:0 2px 6px rgba(0,0,0,.85);margin:0;letter-spacing:.02em}
+      .wn em{font-family:'Cormorant Garamond',serif;font-weight:300;font-style:italic;font-size:1.4em;color:var(--accent);vertical-align:middle}
+      .wp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52px;height:52px;border:1px solid var(--am);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .3s,transform .3s}
+      .wp svg{fill:var(--accent);margin-left:4px}
+      .wi:hover .wp{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
+      .wnum{position:absolute;top:16px;left:16px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--am);z-index:2}
 
       /* ── ABOUT ── */
-      .as{padding:120px 80px;background:#0d0d0d;border-top:1px solid var(--border);position:relative;z-index:10}
-      .ac{display:grid;grid-template-columns:1fr 1.2fr;gap:80px;max-width:1200px;margin:0 auto;align-items:center}
+      .as{padding:120px 48px;border-top:1px solid var(--border);display:flex;justify-content:center}
+      .ac{display:grid;grid-template-columns:1fr 1fr;gap:80px;max-width:1200px;width:100%;align-items:center}
       .ai{position:relative;aspect-ratio:3/4;border-radius:16px;overflow:hidden;background:var(--surface);max-width:320px;margin:0 auto}
       .ai img{width:100%;height:100%;object-fit:cover;opacity:.8;filter:grayscale(20%);transition:all .5s}
       .ai:hover img{filter:grayscale(0%);opacity:1;transform:scale(1.03)}
@@ -565,22 +563,39 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
 
           <div className="hero-stack-wrapper">
             {heroCards.length > 0 && <BackgroundCardStack cards={heroCards} paused={!!selectedVideo} />}
-            <div style={{ position: "absolute", left: isMobile ? "20%" : "40%", top: "-10%", width: isMobile ? "120%" : "80%", height: "130%", pointerEvents: "none", zIndex: 2, overflow: "hidden" }}>
+            <div style={{
+              position: "absolute",
+              left: isMobile ? "20%" : "40%",
+              top: "-10%",
+              width: isMobile ? "120%" : "80%",
+              height: "130%",
+              pointerEvents: "none",
+              zIndex: 2,
+              overflow: "hidden",
+            }}>
               {[
                 { left: "30%", width: "180px", rotate: "25deg", opacity: 0.13, delay: "0s" },
                 { left: "44%", width: "80px", rotate: "25deg", opacity: 0.09, delay: "0.4s" },
                 { left: "52%", width: "320px", rotate: "25deg", opacity: 0.07, delay: "0.8s" },
               ].map((ray, i) => (
                 <div key={i} style={{
-                  position: "absolute", top: 0, left: ray.left, width: ray.width, height: "100%",
+                  position: "absolute",
+                  top: 0,
+                  left: ray.left,
+                  width: ray.width,
+                  height: "100%",
                   background: `linear-gradient(to bottom, rgba(${rgb || "212,180,80"}, ${ray.opacity}), transparent 70%)`,
-                  transform: `rotate(${ray.rotate})`, transformOrigin: "top center",
+                  transform: `rotate(${ray.rotate})`,
+                  transformOrigin: "top center",
                   animation: `rayPulse 4s ease-in-out ${ray.delay} infinite`,
-                  borderRadius: "50%", filter: "blur(18px)",
+                  borderRadius: "50%",
+                  filter: "blur(18px)",
                 }} />
               ))}
             </div>
-            {heroCards.length > 0 && <HeroCardStack cards={heroCards} onCardClick={setSelectedVideo} paused={!!selectedVideo} isMobileOverride={isMobile} />}
+            {heroCards.length > 0 && (
+              <HeroCardStack cards={heroCards} onCardClick={setSelectedVideo} paused={!!selectedVideo} isMobileOverride={isMobile} />
+            )}
           </div>
 
           <div className="hcontent">
@@ -614,12 +629,24 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
             {filtered.map((item, i) => {
               const ytID = getYouTubeID(item.video_url);
               return (
-                <div key={item.id} className={getGridClass(i)} onClick={() => setSelectedVideo(ytID)}
-                  style={(i % 14 === 0 && i + 2 >= filtered.length) ? { aspectRatio: '64/27' } : {}}>
+                <div
+                  key={item.id}
+                  className={getGridClass(i)}
+                  onClick={() => setSelectedVideo(ytID)}
+                  style={(i % 14 === 0 && i + 2 >= filtered.length) ? { aspectRatio: '64/27' } : {}}
+                >
                   <span className="wnum">{String(i + 1).padStart(2, "0")}</span>
                   {ytID && (
-                    <img src={`https://img.youtube.com/vi/${ytID}/maxresdefault.jpg`} alt={item.title} className="wt"
-                      onLoad={e => { if (e.currentTarget.naturalWidth === 120) e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/hqdefault.jpg`; }} />
+                    <img
+                      src={`https://img.youtube.com/vi/${ytID}/maxresdefault.jpg`}
+                      alt={item.title}
+                      className="wt"
+                      onLoad={(e) => {
+                        if (e.currentTarget.naturalWidth === 120) {
+                          e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/hqdefault.jpg`;
+                        }
+                      }}
+                    />
                   )}
                   <div className="wo">
                     <div>
@@ -629,12 +656,22 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
                           if (!item.title) return 'Untitled';
                           const t = item.title.trim();
                           if ((t.startsWith("【") && t.includes("】")) || (t.startsWith("[") && t.includes("]"))) {
-                            const cc = t.startsWith("【") ? "】" : "]";
-                            const idx = t.indexOf(cc);
-                            return <>{t.substring(0, idx + 1)}{t.substring(idx + 1) && <em>{t.substring(idx + 1)}</em>}</>;
+                            const closeChar = t.startsWith("【") ? "】" : "]";
+                            const idx = t.indexOf(closeChar);
+                            return (
+                              <>
+                                {t.substring(0, idx + 1)}
+                                {t.substring(idx + 1) && <em>{t.substring(idx + 1)}</em>}
+                              </>
+                            );
                           }
                           const w = t.split(" ");
-                          return <>{w.slice(0, 2).join(" ")}{w.length > 2 && <em>{' ' + w.slice(2).join(" ")}</em>}</>;
+                          return (
+                            <>
+                              {w.slice(0, 2).join(" ")}
+                              {w.length > 2 && <em>{' ' + w.slice(2).join(" ")}</em>}
+                            </>
+                          );
                         })()}
                       </h3>
                     </div>
@@ -649,25 +686,34 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
         <section className="as" id="about">
           <div className="ac">
             <div className="ai">
-              {settings.about_photo_url
-                ? <img src={settings.about_photo_url} alt={settings.about_name} />
-                : <div style={{ width: "100%", height: "100%", background: "var(--surface)" }} />}
+              {settings.about_photo_url ? (
+                <img src={settings.about_photo_url} alt={settings.about_name} />
+              ) : (
+                <div style={{ width: "100%", height: "100%", background: "var(--surface)" }} />
+              )}
             </div>
             <div className="at">
               <p className="at-sub">Behind The Motion</p>
               <h2 className="at-title">Hello, I'm <em>{settings.about_name}</em>.</h2>
               <p className="at-sub" style={{ marginBottom: "24px", color: "var(--text)" }}>{settings.about_role}</p>
               <p className="at-desc">{settings.about_text}</p>
-              {settings.about_stats?.length > 0 && (
+
+              {settings.about_stats && settings.about_stats.length > 0 && (
                 <div className="as-stats">
                   {settings.about_stats.map((stat, i) => (
-                    <div key={i}><div className="stat-val">{stat.value}</div><div className="stat-lbl">{stat.label}</div></div>
+                    <div key={i}>
+                      <div className="stat-val">{stat.value}</div>
+                      <div className="stat-lbl">{stat.label}</div>
+                    </div>
                   ))}
                 </div>
               )}
-              {settings.about_skills?.length > 0 && (
+
+              {settings.about_skills && settings.about_skills.length > 0 && (
                 <div className="as-skills">
-                  {settings.about_skills.map((skill, i) => <div key={i} className="skill-tag">{skill}</div>)}
+                  {settings.about_skills.map((skill, i) => (
+                    <div key={i} className="skill-tag">{skill}</div>
+                  ))}
                 </div>
               )}
             </div>
@@ -679,7 +725,8 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
           <div className="fs">
             {settings.socials.length > 0
               ? settings.socials.map((s, i) => <a key={i} href={s.url} target="_blank" rel="noopener noreferrer">{s.platform}</a>)
-              : <><a href="#">YouTube</a><a href="#">Instagram</a><a href="#">Behance</a></>}
+              : <><a href="#">YouTube</a><a href="#">Instagram</a><a href="#">Behance</a></>
+            }
           </div>
         </footer>
       </div>
