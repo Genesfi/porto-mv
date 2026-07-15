@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function AdminLogin() {
     const router = useRouter();
@@ -16,13 +11,18 @@ export default function AdminLogin() {
     const [errorMsg, setErrorMsg] = useState("");
     const [checkingSession, setCheckingSession] = useState(true);
 
-    // Kalau sudah login, langsung redirect ke dashboard
+    // Kalau sudah login, langsung redirect ke dashboard (Cek via API internal)
     useEffect(() => {
         const check = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                router.replace("/admin/dashboard");
-            } else {
+            try {
+                const res = await fetch("/api/auth/session");
+                const data = await res.json();
+                if (data.session) {
+                    router.replace("/admin/dashboard");
+                } else {
+                    setCheckingSession(false);
+                }
+            } catch {
                 setCheckingSession(false);
             }
         };
@@ -34,15 +34,27 @@ export default function AdminLogin() {
         setLoading(true);
         setErrorMsg("");
 
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        try {
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email, password }),
+            });
+            
+            const data = await res.json();
 
-        if (error) {
-            setErrorMsg("Email atau password salah. Silakan coba lagi.");
-        } else {
-            router.push("/admin/dashboard");
+            if (res.ok && data.success) {
+                router.push("/admin/dashboard");
+            } else {
+                setErrorMsg(data.error || "Email atau password salah. Silakan coba lagi.");
+            }
+        } catch {
+            setErrorMsg("Gagal melakukan login. Hubungi server bermasalah.");
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false);
     };
 
     if (checkingSession) {

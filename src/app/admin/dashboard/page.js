@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 function getYouTubeID(url) {
     if (!url) return null;
@@ -322,50 +317,59 @@ export default function AdminDashboard() {
     const accentColor = settings.accent_color || "#d4c4a8";
 
     const fetchPortfolios = async () => {
-        const { data } = await supabase.from("portfolios").select("*")
-            .order("sort_order", { ascending: true }).order("id", { ascending: false });
-        if (data) setPortfolios(data);
+        try {
+            const res = await fetch("/api/portfolios");
+            const data = await res.json();
+            if (data.data) setPortfolios(data.data);
+        } catch {}
     };
 
     const fetchSettings = async () => {
-        const { data } = await supabase.from("site_settings").select("*").eq("id", 1).single();
-        if (data) {
-            setSettings({
-                accent_color: data.accent_color || "#d4c4a8",
-                text_color: data.text_color || "#ffffff",
-                about_text: data.about_text || "",
-                showreel_url: data.showreel_url || "",
-                socials: data.socials || [],
-                about_photo_url: data.about_photo_url || "",
-                about_name: data.about_name || "",
-                about_role: data.about_role || "",
-                about_skills: data.about_skills || "",
-                about_stats: data.about_stats || "",
-            });
-        }
+        try {
+            const res = await fetch("/api/site-settings");
+            const data = await res.json();
+            if (data.data) {
+                const d = data.data;
+                setSettings({
+                    accent_color: d.accent_color || "#d4c4a8",
+                    text_color: d.text_color || "#ffffff",
+                    about_text: d.about_text || "",
+                    showreel_url: d.showreel_url || "",
+                    socials: d.socials || [],
+                    about_photo_url: d.about_photo_url || "",
+                    about_name: d.about_name || "",
+                    about_role: d.about_role || "",
+                    about_skills: d.about_skills || "",
+                    about_stats: d.about_stats || "",
+                });
+            }
+        } catch {}
     };
 
     const fetchCommissions = async () => {
-        const { data } = await supabase.from("commissions").select("*")
-            .order("sort_order", { ascending: true }).order("created_at", { ascending: false });
-        if (data) setCommissions(data);
+        try {
+            const res = await fetch("/api/commissions");
+            const data = await res.json();
+            if (data.data) setCommissions(data.data);
+        } catch {}
     };
 
     useEffect(() => {
         const checkSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) { router.replace("/admin"); return; }
-            setUser(session.user);
-            setAuthChecked(true);
-            fetchPortfolios();
-            fetchSettings();
-            fetchCommissions();
+            try {
+                const res = await fetch("/api/auth/session");
+                const data = await res.json();
+                if (!data.session) { router.replace("/admin"); return; }
+                setUser(data.session.user);
+                setAuthChecked(true);
+                fetchPortfolios();
+                fetchSettings();
+                fetchCommissions();
+            } catch {
+                router.replace("/admin");
+            }
         };
         checkSession();
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
-            if (!s) router.replace("/admin");
-        });
-        return () => subscription.unsubscribe();
     }, [router]);
 
     const showNotif = (msg, type = "success") => {
@@ -380,10 +384,19 @@ export default function AdminDashboard() {
         const fileExt = file.name.split('.').pop();
         const fileName = `profile_${Date.now()}.${fileExt}`;
         try {
-            const { data, error } = await supabase.storage.from('portfolio-images').upload(fileName, file);
-            if (error) throw error;
-            const { data: publicUrlData } = supabase.storage.from('portfolio-images').getPublicUrl(fileName);
-            setSettings(prev => ({ ...prev, about_photo_url: publicUrlData.publicUrl }));
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("fileName", fileName);
+
+            const res = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+            });
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || "Gagal upload");
+
+            setSettings(prev => ({ ...prev, about_photo_url: data.publicUrl }));
             showNotif("Foto berhasil di-upload!");
         } catch (error) {
             showNotif("Gagal upload foto: " + error.message, "error");
@@ -396,27 +409,71 @@ export default function AdminDashboard() {
     const handleAddCommission = async ({ client_name, column, payment_tags, progress_tags, type_tags }) => {
         const colItems = commissions.filter(c => c.column === column);
         const maxOrder = colItems.length > 0 ? Math.max(...colItems.map(c => c.sort_order || 0)) : 0;
-        const { error } = await supabase.from("commissions").insert([{
-            client_name, column,
-            payment_tags: payment_tags || [],
-            progress_tags: progress_tags || [],
-            type_tags: type_tags || [],
-            sort_order: maxOrder + 1,
-        }]);
-        if (error) { showNotif("Gagal menyimpan: " + error.message, "error"); }
-        else { fetchCommissions(); showNotif("Antrean berhasil ditambahkan!"); setShowAddCommissionModal(false); }
+        
+        try {
+            const res = await fetch("/api/commissions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    client_name,
+                    column,
+                    payment_tags: payment_tags || [],
+                    progress_tags: progress_tags || [],
+                    type_tags: type_tags || [],
+                    sort_order: maxOrder + 1,
+                }),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                showNotif("Gagal menyimpan: " + (data.error || "Error"), "error");
+            } else {
+                fetchCommissions();
+                showNotif("Antrean berhasil ditambahkan!");
+                setShowAddCommissionModal(false);
+            }
+        } catch (error) {
+            showNotif("Gagal menyimpan: " + error.message, "error");
+        }
     };
 
     const handleEditCommissionSave = async ({ id, client_name, column, payment_tags, progress_tags, type_tags }) => {
-        const { error } = await supabase.from("commissions")
-            .update({ client_name, column, payment_tags, progress_tags, type_tags }).eq("id", id);
-        if (error) { showNotif("Gagal update: " + error.message, "error"); }
-        else { fetchCommissions(); showNotif("Antrean berhasil diupdate!"); setEditCommissionItem(null); }
+        try {
+            const res = await fetch("/api/commissions", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, client_name, column, payment_tags, progress_tags, type_tags }),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                showNotif("Gagal update: " + (data.error || "Error"), "error");
+            } else {
+                fetchCommissions();
+                showNotif("Antrean berhasil diupdate!");
+                setEditCommissionItem(null);
+            }
+        } catch (error) {
+            showNotif("Gagal update: " + error.message, "error");
+        }
     };
 
     const handleDeleteCommission = async (id) => {
-        const { error } = await supabase.from("commissions").delete().eq("id", id);
-        if (!error) { fetchCommissions(); showNotif("Antrean dihapus."); }
+        try {
+            const res = await fetch(`/api/commissions?id=${id}`, {
+                method: "DELETE",
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                fetchCommissions();
+                showNotif("Antrean dihapus.");
+            } else {
+                showNotif("Gagal menghapus: " + (data.error || "Error"), "error");
+            }
+        } catch (error) {
+            showNotif("Gagal menghapus: " + error.message, "error");
+        }
         setDeleteCommissionConfirm(null);
     };
 
@@ -434,32 +491,95 @@ export default function AdminDashboard() {
         const item = commissions.find(c => c.id === draggedCommissionId);
         if (!item || item.column === newColumn) { setDraggedCommissionId(null); return; }
         setCommissions(prev => prev.map(c => c.id === draggedCommissionId ? { ...c, column: newColumn } : c));
-        const { error } = await supabase.from("commissions").update({ column: newColumn }).eq("id", draggedCommissionId);
-        if (error) { showNotif("Gagal: " + error.message, "error"); fetchCommissions(); }
-        else { showNotif(`Dipindah ke ${newColumn}`); }
+        
+        try {
+            const res = await fetch("/api/commissions", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: draggedCommissionId, column: newColumn }),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                showNotif("Gagal: " + (data.error || "Error"), "error");
+                fetchCommissions();
+            } else {
+                showNotif(`Dipindah ke ${newColumn}`);
+            }
+        } catch (error) {
+            showNotif("Gagal: " + error.message, "error");
+            fetchCommissions();
+        }
         setDraggedCommissionId(null);
     };
 
     // ── PORTFOLIO CRUD ──
     const handleAddWork = async ({ title, category, video_url }) => {
         const maxOrder = portfolios.length > 0 ? Math.max(...portfolios.map(p => p.sort_order || 0)) : 0;
-        const { error } = await supabase.from("portfolios").insert([{ title, category, video_url, sort_order: maxOrder + 1 }]);
-        if (error) { showNotif("Gagal menyimpan: " + error.message, "error"); }
-        else { fetchPortfolios(); showNotif("Karya berhasil ditambahkan!"); setShowAddModal(false); }
+        
+        try {
+            const res = await fetch("/api/portfolios", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, category, video_url, sort_order: maxOrder + 1 }),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                showNotif("Gagal menyimpan: " + (data.error || "Error"), "error");
+            } else {
+                fetchPortfolios();
+                showNotif("Karya berhasil ditambahkan!");
+                setShowAddModal(false);
+            }
+        } catch (error) {
+            showNotif("Gagal menyimpan: " + error.message, "error");
+        }
     };
 
     const handleDelete = async (id) => {
-        const { error } = await supabase.from("portfolios").delete().eq("id", id);
-        if (!error) { fetchPortfolios(); showNotif("Karya dihapus."); }
+        try {
+            const res = await fetch(`/api/portfolios?id=${id}`, {
+                method: "DELETE",
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                fetchPortfolios();
+                showNotif("Karya dihapus.");
+            } else {
+                showNotif("Gagal menghapus: " + (data.error || "Error"), "error");
+            }
+        } catch (error) {
+            showNotif("Gagal menghapus: " + error.message, "error");
+        }
         setDeleteConfirm(null);
     };
 
     const handleEditSave = async () => {
-        const { error } = await supabase.from("portfolios")
-            .update({ title: editItem.title, category: editItem.category, video_url: editItem.video_url })
-            .eq("id", editItem.id);
-        if (error) { showNotif("Gagal update: " + error.message, "error"); }
-        else { fetchPortfolios(); showNotif("Karya berhasil diupdate!"); setEditItem(null); }
+        try {
+            const res = await fetch("/api/portfolios", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    id: editItem.id,
+                    title: editItem.title,
+                    category: editItem.category,
+                    video_url: editItem.video_url
+                }),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                showNotif("Gagal update: " + (data.error || "Error"), "error");
+            } else {
+                fetchPortfolios();
+                showNotif("Karya berhasil diupdate!");
+                setEditItem(null);
+            }
+        } catch (error) {
+            showNotif("Gagal update: " + error.message, "error");
+        }
     };
 
     const handleDragStart = (e, index) => { dragItem.current = index; setDragging(index); e.dataTransfer.effectAllowed = "move"; };
@@ -474,17 +594,48 @@ export default function AdminDashboard() {
     };
     const handleDragEnd = async () => {
         setDragging(null);
-        const updates = portfolios.map((p, i) => supabase.from("portfolios").update({ sort_order: i + 1 }).eq("id", p.id));
-        await Promise.all(updates);
-        showNotif("Urutan berhasil disimpan!");
+        const updates = portfolios.map((p, i) => ({ id: p.id, sort_order: i + 1 }));
+        
+        try {
+            const res = await fetch("/api/portfolios", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ updates }),
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                showNotif("Urutan berhasil disimpan!");
+            } else {
+                showNotif("Gagal menyimpan urutan: " + (data.error || "Error"), "error");
+                fetchPortfolios();
+            }
+        } catch (error) {
+            showNotif("Gagal menyimpan urutan: " + error.message, "error");
+            fetchPortfolios();
+        }
     };
 
     const handleSettingsSave = async () => {
         setSettingsLoading(true);
-        const { error } = await supabase.from("site_settings").upsert({ id: 1, ...settings }, { onConflict: "id" });
-        if (error) { showNotif("Gagal simpan settings: " + error.message, "error"); }
-        else { showNotif("Settings berhasil disimpan!"); }
-        setSettingsLoading(false);
+        try {
+            const res = await fetch("/api/site-settings", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(settings),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                showNotif("Gagal simpan settings: " + (data.error || "Error"), "error");
+            } else {
+                showNotif("Settings berhasil disimpan!");
+            }
+        } catch (error) {
+            showNotif("Gagal simpan settings: " + error.message, "error");
+        } finally {
+            setSettingsLoading(false);
+        }
     };
 
     const addSocial = () => {
@@ -496,7 +647,12 @@ export default function AdminDashboard() {
     const updateSocial = (i, field, val) => {
         setSettings(s => { const arr = [...s.socials]; arr[i] = { ...arr[i], [field]: val }; return { ...s, socials: arr }; });
     };
-    const handleLogout = async () => { await supabase.auth.signOut(); router.push("/admin"); };
+    const handleLogout = async () => {
+        try {
+            await fetch("/api/auth/logout", { method: "POST" });
+            router.push("/admin");
+        } catch {}
+    };
 
     if (!authChecked) return (
         <div style={{ minHeight: "100vh", background: "#080808", display: "flex", alignItems: "center", justifyContent: "center" }}>
