@@ -301,6 +301,14 @@ export default function AdminDashboard() {
     const [editCommissionItem, setEditCommissionItem] = useState(null);
     const [deleteCommissionConfirm, setDeleteCommissionConfirm] = useState(null);
     const [draggedCommissionId, setDraggedCommissionId] = useState(null);
+    const autoScrollRef = useRef(null);
+
+    const stopAutoScroll = () => {
+        if (autoScrollRef.current) {
+            cancelAnimationFrame(autoScrollRef.current);
+            autoScrollRef.current = null;
+        }
+    };
     const [notification, setNotification] = useState(null);
     const [deleteConfirm, setDeleteConfirm] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -554,21 +562,38 @@ export default function AdminDashboard() {
 
     const handleDragOverCommission = (e) => {
         e.preventDefault();
-        const container = e.currentTarget.querySelector('.w-col-body') || e.currentTarget;
-        if (container && container.getBoundingClientRect) {
-            const rect = container.getBoundingClientRect();
-            const offsetY = e.clientY - rect.top;
-            const threshold = 70;
-            if (offsetY < threshold) {
-                container.scrollTop -= 18;
-            } else if (rect.height - offsetY < threshold) {
-                container.scrollTop += 18;
-            }
+        const colBody = e.currentTarget.querySelector('.w-col-body') || (e.currentTarget.classList?.contains('w-col-body') ? e.currentTarget : e.currentTarget.closest('.waitlist-column')?.querySelector('.w-col-body'));
+        const mainEl = document.querySelector('.main');
+        
+        const clientY = e.clientY;
+        const viewportHeight = window.innerHeight;
+        const topThreshold = 180;
+        const bottomThreshold = viewportHeight - 120;
+
+        stopAutoScroll();
+
+        if (clientY < topThreshold) {
+            const scrollUp = () => {
+                if (colBody) colBody.scrollTop -= 20;
+                if (mainEl) mainEl.scrollTop -= 20;
+                window.scrollBy(0, -20);
+                autoScrollRef.current = requestAnimationFrame(scrollUp);
+            };
+            autoScrollRef.current = requestAnimationFrame(scrollUp);
+        } else if (clientY > bottomThreshold) {
+            const scrollDown = () => {
+                if (colBody) colBody.scrollTop += 20;
+                if (mainEl) mainEl.scrollTop += 20;
+                window.scrollBy(0, 20);
+                autoScrollRef.current = requestAnimationFrame(scrollDown);
+            };
+            autoScrollRef.current = requestAnimationFrame(scrollDown);
         }
     };
 
     const handleDropCommission = async (e, newColumn) => {
         e.preventDefault();
+        stopAutoScroll();
         if (!draggedCommissionId) return;
         const item = commissions.find(c => c.id === draggedCommissionId);
         if (!item || item.column === newColumn) { setDraggedCommissionId(null); return; }
@@ -1188,7 +1213,7 @@ export default function AdminDashboard() {
                                                                     className={`w-card ${draggedCommissionId === item.id ? "dragging" : ""}`}
                                                                     draggable
                                                                     onDragStart={(e) => handleDragStartCommission(e, item.id)}
-                                                                    onDragEnd={() => setDraggedCommissionId(null)}
+                                                                    onDragEnd={() => { setDraggedCommissionId(null); stopAutoScroll(); }}
                                                                     style={{ "--col-color": col.color }}
                                                                 >
                                                                     <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "2.5px", background: col.color, opacity: 0.7 }} />
