@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import TwitterFeed from "@/components/TwitterFeed";
 
 function getYouTubeID(url) {
   if (!url) return null;
@@ -638,11 +639,14 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
                   <span className="wnum">{String(i + 1).padStart(2, "0")}</span>
                   {ytID && (
                     <img
-                      src={`https://img.youtube.com/vi/${ytID}/maxresdefault.jpg`}
+                      src={`https://img.youtube.com/vi/${ytID}/hqdefault.jpg`}
                       alt={item.title}
                       className="wt"
+                      onError={(e) => {
+                        e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/mqdefault.jpg`;
+                      }}
                       onLoad={(e) => {
-                        if (e.currentTarget.naturalWidth === 120) {
+                        if (e.currentTarget.naturalWidth <= 120) {
                           e.currentTarget.src = `https://img.youtube.com/vi/${ytID}/hqdefault.jpg`;
                         }
                       }}
@@ -682,6 +686,9 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
             })}
           </div>
         </section>
+
+        {/* Twitter / X Live Profile & Posts Feed */}
+        <TwitterFeed accentColor={settings.accent_color} />
 
         <section className="as" id="about">
           <div className="ac">

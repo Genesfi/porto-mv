@@ -17,9 +17,11 @@ function hexToRgb(hex) {
 }
 
 const TABS = [
+    { id: "requests", label: "Waitlist Requests", icon: "📩" },
+    { id: "waitlist", label: "Commission Queue", icon: "📋" },
     { id: "list", label: "All Works", icon: "▦" },
-    { id: "waitlist", label: "Waitlist", icon: "☰" },
     { id: "settings", label: "Settings", icon: "⚙" },
+    { id: "security", label: "Security & Audit", icon: "🛡" },
 ];
 
 const SOCIAL_ICONS = {
@@ -354,6 +356,72 @@ export default function AdminDashboard() {
         } catch {}
     };
 
+    const [waitlistRequests, setWaitlistRequests] = useState([]);
+
+    const fetchWaitlistRequests = async () => {
+        try {
+            const res = await fetch("/api/waitlist/requests");
+            const data = await res.json();
+            if (data.data) setWaitlistRequests(data.data);
+        } catch {}
+    };
+
+    const handleApproveRequest = async (id) => {
+        try {
+            const res = await fetch("/api/waitlist/requests", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, action: "approve" }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showNotif("Request disetujui & dimasukkan ke antrean komisi!");
+                fetchWaitlistRequests();
+                fetchCommissions();
+            } else {
+                showNotif("Gagal: " + (data.error || "Error"), "error");
+            }
+        } catch (err) {
+            showNotif("Gagal: " + err.message, "error");
+        }
+    };
+
+    const handleRejectRequest = async (id) => {
+        try {
+            const res = await fetch("/api/waitlist/requests", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, status: "rejected" }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showNotif("Request ditolak.");
+                fetchWaitlistRequests();
+            } else {
+                showNotif("Gagal: " + (data.error || "Error"), "error");
+            }
+        } catch (err) {
+            showNotif("Gagal: " + err.message, "error");
+        }
+    };
+
+    const handleDeleteRequest = async (id) => {
+        try {
+            const res = await fetch(`/api/waitlist/requests?id=${id}`, {
+                method: "DELETE",
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showNotif("Request dihapus.");
+                fetchWaitlistRequests();
+            } else {
+                showNotif("Gagal: " + (data.error || "Error"), "error");
+            }
+        } catch (err) {
+            showNotif("Gagal: " + err.message, "error");
+        }
+    };
+
     useEffect(() => {
         const checkSession = async () => {
             try {
@@ -365,6 +433,7 @@ export default function AdminDashboard() {
                 fetchPortfolios();
                 fetchSettings();
                 fetchCommissions();
+                fetchWaitlistRequests();
             } catch {
                 router.replace("/admin");
             }
@@ -911,9 +980,11 @@ export default function AdminDashboard() {
                 <div className="main">
                     <div className="topbar">
                         <h1 className="pg-title">
-                            {activeTab === "list" && <>All <em>Works</em></>}
+                            {activeTab === "requests" && <>Waitlist <em>Requests Inbox</em></>}
+                            {activeTab === "waitlist" && <>Commission <em>Queue Board</em></>}
+                            {activeTab === "list" && <>All Portfolio <em>Works</em></>}
                             {activeTab === "settings" && <>Site <em>Settings</em></>}
-                            {activeTab === "waitlist" && <>Commission <em>Waitlist</em></>}
+                            {activeTab === "security" && <>System <em>Security Audit</em></>}
                         </h1>
                         <div className="topbar-r">
                             <span className="badge">{totalCount} Works</span>
@@ -924,6 +995,151 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="content">
+                        {/* ── WAITLIST REQUESTS INBOX TAB ── */}
+                        {activeTab === "requests" && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <p className="drag-hint" style={{ margin: 0 }}>Review public waitlist requests submitted by visitors.</p>
+                                    <span style={{ fontSize: "11px", color: "var(--accent)" }}>
+                                        Pending Requests: {waitlistRequests.filter(r => r.status === "pending").length}
+                                    </span>
+                                </div>
+
+                                {waitlistRequests.length === 0 ? (
+                                    <div style={{ padding: "40px 0", textAlign: "center", color: "var(--muted)", fontStyle: "italic", fontSize: "12px" }}>
+                                        Belum ada request waitlist publik yang masuk.
+                                    </div>
+                                ) : (
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "16px" }}>
+                                        {waitlistRequests.map(req => (
+                                            <div key={req.id} style={{
+                                                background: "var(--surface)",
+                                                border: "1px solid var(--border)",
+                                                borderRadius: "12px",
+                                                padding: "20px",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "12px"
+                                            }}>
+                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                                                    <div>
+                                                        <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "22px", color: "#fff" }}>
+                                                            {req.client_name}
+                                                        </h3>
+                                                        <p style={{ fontSize: "11px", color: "var(--accent)", marginTop: "2px" }}>
+                                                            {req.contact_info}
+                                                        </p>
+                                                    </div>
+                                                    <span style={{
+                                                        fontSize: "9px",
+                                                        padding: "4px 8px",
+                                                        borderRadius: "4px",
+                                                        textTransform: "uppercase",
+                                                        background: req.status === "approved" ? "rgba(74,230,184,0.15)" : req.status === "rejected" ? "rgba(230,74,74,0.15)" : "rgba(230,200,74,0.15)",
+                                                        color: req.status === "approved" ? "#4ae6b8" : req.status === "rejected" ? "#e64a4a" : "#e6c84a",
+                                                        border: `1px solid ${req.status === "approved" ? "#4ae6b840" : req.status === "rejected" ? "#e64a4a40" : "#e6c84a40"}`
+                                                    }}>
+                                                        {req.status}
+                                                    </span>
+                                                </div>
+
+                                                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                                                    <span style={{ fontSize: "10px", background: "rgba(255,255,255,0.05)", padding: "3px 8px", borderRadius: "4px", color: "#e1e1e1" }}>
+                                                        📹 {req.project_type}
+                                                    </span>
+                                                    {req.budget_range && (
+                                                        <span style={{ fontSize: "10px", background: "rgba(255,255,255,0.05)", padding: "3px 8px", borderRadius: "4px", color: "#e1e1e1" }}>
+                                                            💰 {req.budget_range}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                {req.description && (
+                                                    <p style={{ fontSize: "11px", color: "var(--muted)", lineHeight: "1.6", background: "rgba(0,0,0,0.3)", padding: "10px", borderRadius: "6px" }}>
+                                                        "{req.description}"
+                                                    </p>
+                                                )}
+
+                                                <div style={{ display: "flex", gap: "8px", marginTop: "auto", paddingTop: "8px" }}>
+                                                    {req.status !== "approved" && (
+                                                        <button
+                                                            onClick={() => handleApproveRequest(req.id)}
+                                                            style={{
+                                                                flex: 1, padding: "8px", borderRadius: "6px", background: "rgba(74,230,184,0.15)", border: "1px solid rgba(74,230,184,0.3)", color: "#4ae6b8", fontSize: "10px", fontWeight: 600, cursor: "pointer"
+                                                            }}
+                                                        >
+                                                            ✓ Approve to Queue
+                                                        </button>
+                                                    )}
+                                                    {req.status === "pending" && (
+                                                        <button
+                                                            onClick={() => handleRejectRequest(req.id)}
+                                                            style={{
+                                                                padding: "8px 14px", borderRadius: "6px", background: "rgba(230,74,74,0.1)", border: "1px solid rgba(230,74,74,0.25)", color: "#e64a4a", fontSize: "10px", cursor: "pointer"
+                                                            }}
+                                                        >
+                                                            ✕ Reject
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleDeleteRequest(req.id)}
+                                                        style={{
+                                                            padding: "8px 12px", borderRadius: "6px", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#888", fontSize: "10px", cursor: "pointer"
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* ── SECURITY TAB ── */}
+                        {activeTab === "security" && (
+                            <div className="settings-grid">
+                                <div className="settings-panel full">
+                                    <h2 className="s-panel-title">Security & <em>Hardening Status</em></h2>
+                                    <p className="s-panel-sub">Sistem keamanan aktif melindungi web dari hacking, brute-force, dan bot spam.</p>
+
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "16px", marginTop: "16px" }}>
+                                        <div style={{ background: "rgba(74,230,184,0.05)", border: "1px solid rgba(74,230,184,0.2)", borderRadius: "10px", padding: "16px" }}>
+                                            <div style={{ fontSize: "20px", marginBottom: "8px" }}>🛡️</div>
+                                            <h4 style={{ fontSize: "13px", color: "#4ae6b8" }}>Brute-Force Protection</h4>
+                                            <p style={{ fontSize: "10px", color: "var(--muted)", marginTop: "4px", lineHeight: "1.5" }}>
+                                                IP-based rate limiter aktif pada `/api/auth/login`. Maksimal 5 percobaan per 15 menit.
+                                            </p>
+                                        </div>
+
+                                        <div style={{ background: "rgba(74,230,184,0.05)", border: "1px solid rgba(74,230,184,0.2)", borderRadius: "10px", padding: "16px" }}>
+                                            <div style={{ fontSize: "20px", marginBottom: "8px" }}>💉</div>
+                                            <h4 style={{ fontSize: "13px", color: "#4ae6b8" }}>SQL Injection Prevention</h4>
+                                            <p style={{ fontSize: "10px", color: "var(--muted)", marginTop: "4px", lineHeight: "1.5" }}>
+                                                Menggunakan parameterized client query Supabase. Aman dari manipulasi query SQL.
+                                            </p>
+                                        </div>
+
+                                        <div style={{ background: "rgba(74,230,184,0.05)", border: "1px solid rgba(74,230,184,0.2)", borderRadius: "10px", padding: "16px" }}>
+                                            <div style={{ fontSize: "20px", marginBottom: "8px" }}>🔒</div>
+                                            <h4 style={{ fontSize: "13px", color: "#4ae6b8" }}>XSS & HTML Sanitization</h4>
+                                            <p style={{ fontSize: "10px", color: "var(--muted)", marginTop: "4px", lineHeight: "1.5" }}>
+                                                Input publik disaring dengan `sanitizeInput()` sebelum disimpan atau ditampilkan.
+                                            </p>
+                                        </div>
+
+                                        <div style={{ background: "rgba(74,230,184,0.05)", border: "1px solid rgba(74,230,184,0.2)", borderRadius: "10px", padding: "16px" }}>
+                                            <div style={{ fontSize: "20px", marginBottom: "8px" }}>🍯</div>
+                                            <h4 style={{ fontSize: "13px", color: "#4ae6b8" }}>Honeypot Bot Protection</h4>
+                                            <p style={{ fontSize: "10px", color: "var(--muted)", marginTop: "4px", lineHeight: "1.5" }}>
+                                                Form request waitlist dilengkapi hidden honeypot field untuk memblokir bot otomatis.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                         {/* ── WAITLIST TAB ── */}
                         {activeTab === "waitlist" && (
                             <>
