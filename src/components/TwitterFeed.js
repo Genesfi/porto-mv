@@ -54,10 +54,10 @@ export default function TwitterFeed({ accentColor = "#d4c4a8", latestTweetUrl = 
     }, [tweetId]);
 
     return (
-        <section style={{
-            margin: "60px auto",
-            maxWidth: "960px",
-            padding: "0 24px"
+        <div style={{
+            width: "100%",
+            maxWidth: "100%",
+            margin: "0"
         }}>
             <style>{`
                 .x-card {
@@ -275,6 +275,6 @@ export default function TwitterFeed({ accentColor = "#d4c4a8", latestTweetUrl = 
                     </div>
                 </div>
             </motion.div>
-        </section>
+        </div>
     );
 }

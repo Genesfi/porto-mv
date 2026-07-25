@@ -687,22 +687,22 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
           </div>
         </section>
 
-        {/* Twitter / X Live Profile & Posts Feed */}
-        <TwitterFeed accentColor={settings.accent_color} />
-
         <section className="as" id="about">
           <div className="ac">
-            <div className="ai">
-              {settings.about_photo_url ? (
-                <img src={settings.about_photo_url} alt={settings.about_name} />
-              ) : (
-                <div style={{ width: "100%", height: "100%", background: "var(--surface)" }} />
-              )}
-            </div>
             <div className="at">
-              <p className="at-sub">Behind The Motion</p>
-              <h2 className="at-title">Hello, I'm <em>{settings.about_name}</em>.</h2>
-              <p className="at-sub" style={{ marginBottom: "24px", color: "var(--text)" }}>{settings.about_role}</p>
+              <div style={{ display: "flex", gap: "24px", alignItems: "center", marginBottom: "28px" }}>
+                {settings.about_photo_url && (
+                  <div className="ai" style={{ width: "90px", height: "90px", borderRadius: "50%", flexShrink: 0, margin: 0, border: "2px solid rgba(212,196,168,0.3)" }}>
+                    <img src={settings.about_photo_url} alt={settings.about_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                )}
+                <div>
+                  <p className="at-sub" style={{ marginBottom: "4px" }}>Behind The Motion</p>
+                  <h2 className="at-title" style={{ fontSize: "36px", marginBottom: "4px" }}>Hello, I'm <em>{settings.about_name}</em>.</h2>
+                  <p className="at-sub" style={{ margin: 0, color: "var(--accent)", fontSize: "10px" }}>{settings.about_role}</p>
+                </div>
+              </div>
+
               <p className="at-desc">{settings.about_text}</p>
 
               {settings.about_stats && settings.about_stats.length > 0 && (
@@ -723,6 +723,11 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Twitter / X Live Profile & Posts Feed Side-by-Side */}
+            <div style={{ flex: 1, width: "100%" }}>
+              <TwitterFeed accentColor={settings.accent_color} latestTweetUrl={settings.latest_tweet_url} />
             </div>
           </div>
         </section>
