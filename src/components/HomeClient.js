@@ -543,7 +543,7 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
             {navLinks.map(l => (
               <a key={l.label} href={l.href} className={l.href === "/waitlist" ? "active" : ""}>{l.label}</a>
             ))}
-            <a href="mailto:migi@email.com" className="nc">Get in Touch</a>
+            <a href="/waitlist" className="nc">Get in Touch</a>
           </div>
           {/* Hamburger — mobile only */}
           <button
