@@ -552,7 +552,20 @@ export default function AdminDashboard() {
         e.dataTransfer.effectAllowed = "move";
     };
 
-    const handleDragOverCommission = (e) => { e.preventDefault(); };
+    const handleDragOverCommission = (e) => {
+        e.preventDefault();
+        const container = e.currentTarget.querySelector('.w-col-body') || e.currentTarget;
+        if (container && container.getBoundingClientRect) {
+            const rect = container.getBoundingClientRect();
+            const offsetY = e.clientY - rect.top;
+            const threshold = 70;
+            if (offsetY < threshold) {
+                container.scrollTop -= 18;
+            } else if (rect.height - offsetY < threshold) {
+                container.scrollTop += 18;
+            }
+        }
+    };
 
     const handleDropCommission = async (e, newColumn) => {
         e.preventDefault();
