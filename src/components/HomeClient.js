@@ -744,9 +744,28 @@ export default function HomeClient({ initialPortfolios, initialSettings }) {
       </div>
 
       {selectedVideo && (
-        <div className="mb" onClick={() => setSelectedVideo(null)}>
+        <div
+          className="mb"
+          onClick={() => {
+            setSelectedVideo(null);
+            if (typeof window !== "undefined") window.focus();
+          }}
+          onMouseEnter={() => {
+            if (typeof window !== "undefined") window.focus();
+          }}
+        >
           <div className="mi" onClick={e => e.stopPropagation()}>
-            <div className="mt"><button className="mc" onClick={() => setSelectedVideo(null)}>Close ✕</button></div>
+            <div className="mt">
+              <button
+                className="mc"
+                onClick={() => {
+                  setSelectedVideo(null);
+                  if (typeof window !== "undefined") window.focus();
+                }}
+              >
+                Close ✕
+              </button>
+            </div>
             <div className="mv">
               <iframe src={`https://www.youtube.com/embed/${selectedVideo}?autoplay=1`} allow="autoplay; encrypted-media" allowFullScreen />
             </div>
