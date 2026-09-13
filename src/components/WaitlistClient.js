@@ -13,6 +13,7 @@ function hexToRgb(hex) {
 const BOARD_COLUMNS = [
     { key: "Waitlist", label: "Waitlist", sub: "Queued", accent: "#e6c84a" },
     { key: "In Progress", label: "In Progress", sub: "Active", accent: "#a06ee6" },
+    { key: "Revision", label: "Revision", sub: "Review & Polish", accent: "#e64a8a" },
     { key: "Completed", label: "Completed", sub: "Finished", accent: "#4ae6b8" },
 ];
 
@@ -258,7 +259,9 @@ export default function WaitlistClient({ initialCommissions, initialSettings }) 
         .stat-label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:4px}
         .stat-divider{width:1px;background:var(--border);align-self:stretch;margin:4px 0}
 
-        .board{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:0 48px 80px;flex:1;align-items:start}
+        .board{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:0 48px 80px;flex:1;align-items:start}
+        @media (max-width: 1200px) { .board{grid-template-columns:repeat(2,1fr)} }
+        @media (max-width: 680px) { .board{grid-template-columns:1fr} }
 
         .col{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
         .c-head{padding:18px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}

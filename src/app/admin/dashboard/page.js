@@ -40,13 +40,15 @@ const CATEGORY_SUGGESTIONS = [
 const BOARD_COLUMNS = [
     { key: "Waitlist", label: "Waitlist", color: "#e6c84a" },
     { key: "In Progress", label: "In Progress", color: "#a06ee6" },
+    { key: "Revision", label: "Revision", color: "#e64a8a" },
     { key: "Completed", label: "Completed", color: "#4ae6b8" },
 ];
 
-// Mapping column ke tag progress default-nya
+// Mapping column ke tag progress (1 tag progress per kolom)
 const COLUMN_PROGRESS_TAG_MAP = {
     "Waitlist": "Waiting",
     "In Progress": "In Progress",
+    "Revision": "Revision",
     "Completed": "Done",
 };
 
@@ -185,36 +187,23 @@ function AddWorkModal({ onClose, onSave }) {
 }
 
 // ── ADD COMMISSION MODAL ──
+// ── ADD COMMISSION MODAL ──
 function AddCommissionModal({ onClose, onSave, defaultColumn }) {
     const [clientName, setClientName] = useState("");
     const [column, setColumn] = useState(defaultColumn || "Waitlist");
     const [paymentTags, setPaymentTags] = useState([]);
-    const [progressTags, setProgressTags] = useState(() => {
-        const initial = COLUMN_PROGRESS_TAG_MAP[defaultColumn || "Waitlist"];
-        return initial ? [initial] : [];
-    });
     const [typeTags, setTypeTags] = useState([]);
     const [loading, setLoading] = useState(false);
-
-    const handleSelectColumn = (colKey) => {
-        setColumn(colKey);
-        const targetTag = COLUMN_PROGRESS_TAG_MAP[colKey];
-        if (targetTag) {
-            setProgressTags(prev => {
-                const others = (prev || []).filter(t => !PROGRESS_OPTIONS.includes(t));
-                return [targetTag, ...others];
-            });
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        const progressTag = COLUMN_PROGRESS_TAG_MAP[column] || "Waiting";
         await onSave({
             client_name: clientName,
             column,
             payment_tags: paymentTags,
-            progress_tags: progressTags,
+            progress_tags: [progressTag],
             type_tags: typeTags,
         });
         setLoading(false);
@@ -231,19 +220,23 @@ function AddCommissionModal({ onClose, onSave, defaultColumn }) {
                         <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Nama klien..." required />
                     </div>
                     <div className="field">
-                        <label>Column / Stage</label>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "7px" }}>
+                            <label style={{ margin: 0 }}>Column / Stage</label>
+                            <span style={{ fontSize: "9px", color: "var(--muted)", fontStyle: "italic" }}>
+                                Tag Progress: <strong style={{ color: BOARD_COLUMNS.find(c => c.key === column)?.color || "var(--accent)" }}>{COLUMN_PROGRESS_TAG_MAP[column]}</strong>
+                            </span>
+                        </div>
                         <div className="cat-chips-row">
                             {BOARD_COLUMNS.map(col => (
                                 <button key={col.key} type="button"
                                     className={`cat-chip ${column === col.key ? "active" : ""}`}
-                                    onMouseDown={e => { e.preventDefault(); handleSelectColumn(col.key); }}
+                                    onMouseDown={e => { e.preventDefault(); setColumn(col.key); }}
                                     style={column === col.key ? { background: col.color, color: "#080808", borderColor: col.color } : {}}
                                 >{col.label}</button>
                             ))}
                         </div>
                     </div>
                     <MultiCheckField label="Payment Tags" options={PAYMENT_OPTIONS} selected={paymentTags} onChange={setPaymentTags} />
-                    <MultiCheckField label="Progress Tags" options={PROGRESS_OPTIONS} selected={progressTags} onChange={setProgressTags} />
                     <MultiCheckField label="Type Tags" options={TYPE_OPTIONS} selected={typeTags} onChange={setTypeTags} />
                     <div className="modal-btns">
                         <button type="button" className="btn-mcancel" onClick={onClose}>Cancel</button>
@@ -260,25 +253,21 @@ function EditCommissionModal({ item, onClose, onSave }) {
     const [clientName, setClientName] = useState(item.client_name || "");
     const [column, setColumn] = useState(item.column || "Waitlist");
     const [paymentTags, setPaymentTags] = useState(item.payment_tags || []);
-    const [progressTags, setProgressTags] = useState(item.progress_tags || []);
     const [typeTags, setTypeTags] = useState(item.type_tags || []);
     const [loading, setLoading] = useState(false);
-
-    const handleSelectColumn = (colKey) => {
-        setColumn(colKey);
-        const targetTag = COLUMN_PROGRESS_TAG_MAP[colKey];
-        if (targetTag) {
-            setProgressTags(prev => {
-                const others = (prev || []).filter(t => !PROGRESS_OPTIONS.includes(t));
-                return [targetTag, ...others];
-            });
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        await onSave({ id: item.id, client_name: clientName, column, payment_tags: paymentTags, progress_tags: progressTags, type_tags: typeTags });
+        const progressTag = COLUMN_PROGRESS_TAG_MAP[column] || "Waiting";
+        await onSave({
+            id: item.id,
+            client_name: clientName,
+            column,
+            payment_tags: paymentTags,
+            progress_tags: [progressTag],
+            type_tags: typeTags
+        });
         setLoading(false);
     };
 
@@ -292,19 +281,23 @@ function EditCommissionModal({ item, onClose, onSave }) {
                         <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} required />
                     </div>
                     <div className="field">
-                        <label>Column / Stage</label>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "7px" }}>
+                            <label style={{ margin: 0 }}>Column / Stage</label>
+                            <span style={{ fontSize: "9px", color: "var(--muted)", fontStyle: "italic" }}>
+                                Tag Progress: <strong style={{ color: BOARD_COLUMNS.find(c => c.key === column)?.color || "var(--accent)" }}>{COLUMN_PROGRESS_TAG_MAP[column]}</strong>
+                            </span>
+                        </div>
                         <div className="cat-chips-row">
                             {BOARD_COLUMNS.map(col => (
                                 <button key={col.key} type="button"
                                     className={`cat-chip ${column === col.key ? "active" : ""}`}
-                                    onMouseDown={e => { e.preventDefault(); handleSelectColumn(col.key); }}
+                                    onMouseDown={e => { e.preventDefault(); setColumn(col.key); }}
                                     style={column === col.key ? { background: col.color, color: "#080808", borderColor: col.color } : {}}
                                 >{col.label}</button>
                             ))}
                         </div>
                     </div>
                     <MultiCheckField label="Payment Tags" options={PAYMENT_OPTIONS} selected={paymentTags} onChange={setPaymentTags} />
-                    <MultiCheckField label="Progress Tags" options={PROGRESS_OPTIONS} selected={progressTags} onChange={setProgressTags} />
                     <MultiCheckField label="Type Tags" options={TYPE_OPTIONS} selected={typeTags} onChange={setTypeTags} />
                     <div className="modal-btns">
                         <button type="button" className="btn-mcancel" onClick={onClose}>Cancel</button>
@@ -630,9 +623,8 @@ export default function AdminDashboard() {
         const item = commissions.find(c => c.id === draggedCommissionId);
         if (!item || item.column === newColumn) { setDraggedCommissionId(null); return; }
 
-        const targetProgressTag = COLUMN_PROGRESS_TAG_MAP[newColumn];
-        const otherProgress = (item.progress_tags || []).filter(t => !PROGRESS_OPTIONS.includes(t));
-        const newProgressTags = targetProgressTag ? [targetProgressTag, ...otherProgress] : (item.progress_tags || []);
+        const targetProgressTag = COLUMN_PROGRESS_TAG_MAP[newColumn] || "Waiting";
+        const newProgressTags = [targetProgressTag];
 
         setCommissions(prev => prev.map(c => c.id === draggedCommissionId ? {
             ...c,
@@ -667,29 +659,27 @@ export default function AdminDashboard() {
 
     const handleSyncAllTags = async () => {
         const mismatched = commissions.filter(c => {
-            const expectedTag = COLUMN_PROGRESS_TAG_MAP[c.column || "Waitlist"];
-            const currentHasExpected = (c.progress_tags || []).includes(expectedTag);
-            return !currentHasExpected;
+            const expectedTag = COLUMN_PROGRESS_TAG_MAP[c.column || "Waitlist"] || "Waiting";
+            const currentTags = c.progress_tags || [];
+            return currentTags.length !== 1 || currentTags[0] !== expectedTag;
         });
 
         if (mismatched.length === 0) {
-            showNotif("Semua tag kartu sudah sinkron dengan kolomnya!");
+            showNotif("Semua tag kartu sudah sinkron (1 progress tag per kolom)!");
             return;
         }
 
         try {
             showNotif(`Menyinkronkan ${mismatched.length} kartu...`);
             for (const item of mismatched) {
-                const targetProgressTag = COLUMN_PROGRESS_TAG_MAP[item.column || "Waitlist"];
-                const otherProgress = (item.progress_tags || []).filter(t => !PROGRESS_OPTIONS.includes(t));
-                const newProgressTags = targetProgressTag ? [targetProgressTag, ...otherProgress] : (item.progress_tags || []);
+                const targetProgressTag = COLUMN_PROGRESS_TAG_MAP[item.column || "Waitlist"] || "Waiting";
                 await fetch("/api/commissions", {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         id: item.id,
                         column: item.column || "Waitlist",
-                        progress_tags: newProgressTags
+                        progress_tags: [targetProgressTag]
                     }),
                 });
             }
