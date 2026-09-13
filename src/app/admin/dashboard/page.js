@@ -43,6 +43,13 @@ const BOARD_COLUMNS = [
     { key: "Completed", label: "Completed", color: "#4ae6b8" },
 ];
 
+// Mapping column ke tag progress default-nya
+const COLUMN_PROGRESS_TAG_MAP = {
+    "Waitlist": "Waiting",
+    "In Progress": "In Progress",
+    "Completed": "Done",
+};
+
 // ── TAG OPTIONS (multi-select) ──
 const PAYMENT_OPTIONS = ["Pending", "Down Payment", "Full Payment"];
 const PROGRESS_OPTIONS = ["Waiting", "In Progress", "Revision", "Done"];
@@ -182,9 +189,23 @@ function AddCommissionModal({ onClose, onSave, defaultColumn }) {
     const [clientName, setClientName] = useState("");
     const [column, setColumn] = useState(defaultColumn || "Waitlist");
     const [paymentTags, setPaymentTags] = useState([]);
-    const [progressTags, setProgressTags] = useState([]);
+    const [progressTags, setProgressTags] = useState(() => {
+        const initial = COLUMN_PROGRESS_TAG_MAP[defaultColumn || "Waitlist"];
+        return initial ? [initial] : [];
+    });
     const [typeTags, setTypeTags] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    const handleSelectColumn = (colKey) => {
+        setColumn(colKey);
+        const targetTag = COLUMN_PROGRESS_TAG_MAP[colKey];
+        if (targetTag) {
+            setProgressTags(prev => {
+                const others = (prev || []).filter(t => !PROGRESS_OPTIONS.includes(t));
+                return [targetTag, ...others];
+            });
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -215,7 +236,7 @@ function AddCommissionModal({ onClose, onSave, defaultColumn }) {
                             {BOARD_COLUMNS.map(col => (
                                 <button key={col.key} type="button"
                                     className={`cat-chip ${column === col.key ? "active" : ""}`}
-                                    onMouseDown={e => { e.preventDefault(); setColumn(col.key); }}
+                                    onMouseDown={e => { e.preventDefault(); handleSelectColumn(col.key); }}
                                     style={column === col.key ? { background: col.color, color: "#080808", borderColor: col.color } : {}}
                                 >{col.label}</button>
                             ))}
@@ -243,6 +264,17 @@ function EditCommissionModal({ item, onClose, onSave }) {
     const [typeTags, setTypeTags] = useState(item.type_tags || []);
     const [loading, setLoading] = useState(false);
 
+    const handleSelectColumn = (colKey) => {
+        setColumn(colKey);
+        const targetTag = COLUMN_PROGRESS_TAG_MAP[colKey];
+        if (targetTag) {
+            setProgressTags(prev => {
+                const others = (prev || []).filter(t => !PROGRESS_OPTIONS.includes(t));
+                return [targetTag, ...others];
+            });
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -265,7 +297,7 @@ function EditCommissionModal({ item, onClose, onSave }) {
                             {BOARD_COLUMNS.map(col => (
                                 <button key={col.key} type="button"
                                     className={`cat-chip ${column === col.key ? "active" : ""}`}
-                                    onMouseDown={e => { e.preventDefault(); setColumn(col.key); }}
+                                    onMouseDown={e => { e.preventDefault(); handleSelectColumn(col.key); }}
                                     style={column === col.key ? { background: col.color, color: "#080808", borderColor: col.color } : {}}
                                 >{col.label}</button>
                             ))}
@@ -597,13 +629,26 @@ export default function AdminDashboard() {
         if (!draggedCommissionId) return;
         const item = commissions.find(c => c.id === draggedCommissionId);
         if (!item || item.column === newColumn) { setDraggedCommissionId(null); return; }
-        setCommissions(prev => prev.map(c => c.id === draggedCommissionId ? { ...c, column: newColumn } : c));
+
+        const targetProgressTag = COLUMN_PROGRESS_TAG_MAP[newColumn];
+        const otherProgress = (item.progress_tags || []).filter(t => !PROGRESS_OPTIONS.includes(t));
+        const newProgressTags = targetProgressTag ? [targetProgressTag, ...otherProgress] : (item.progress_tags || []);
+
+        setCommissions(prev => prev.map(c => c.id === draggedCommissionId ? {
+            ...c,
+            column: newColumn,
+            progress_tags: newProgressTags
+        } : c));
         
         try {
             const res = await fetch("/api/commissions", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id: draggedCommissionId, column: newColumn }),
+                body: JSON.stringify({
+                    id: draggedCommissionId,
+                    column: newColumn,
+                    progress_tags: newProgressTags
+                }),
             });
             const data = await res.json();
 
@@ -611,13 +656,48 @@ export default function AdminDashboard() {
                 showNotif("Gagal: " + (data.error || "Error"), "error");
                 fetchCommissions();
             } else {
-                showNotif(`Dipindah ke ${newColumn}`);
+                showNotif(`Dipindah ke ${newColumn} (${targetProgressTag})`);
             }
         } catch (error) {
             showNotif("Gagal: " + error.message, "error");
             fetchCommissions();
         }
         setDraggedCommissionId(null);
+    };
+
+    const handleSyncAllTags = async () => {
+        const mismatched = commissions.filter(c => {
+            const expectedTag = COLUMN_PROGRESS_TAG_MAP[c.column || "Waitlist"];
+            const currentHasExpected = (c.progress_tags || []).includes(expectedTag);
+            return !currentHasExpected;
+        });
+
+        if (mismatched.length === 0) {
+            showNotif("Semua tag kartu sudah sinkron dengan kolomnya!");
+            return;
+        }
+
+        try {
+            showNotif(`Menyinkronkan ${mismatched.length} kartu...`);
+            for (const item of mismatched) {
+                const targetProgressTag = COLUMN_PROGRESS_TAG_MAP[item.column || "Waitlist"];
+                const otherProgress = (item.progress_tags || []).filter(t => !PROGRESS_OPTIONS.includes(t));
+                const newProgressTags = targetProgressTag ? [targetProgressTag, ...otherProgress] : (item.progress_tags || []);
+                await fetch("/api/commissions", {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        id: item.id,
+                        column: item.column || "Waitlist",
+                        progress_tags: newProgressTags
+                    }),
+                });
+            }
+            await fetchCommissions();
+            showNotif(`Berhasil menyinkronkan ${mismatched.length} tag kartu!`);
+        } catch (err) {
+            showNotif("Gagal sinkron: " + err.message, "error");
+        }
     };
 
     // ── PORTFOLIO CRUD ──
@@ -1181,7 +1261,29 @@ export default function AdminDashboard() {
                         {/* ── WAITLIST TAB ── */}
                         {activeTab === "waitlist" && (
                             <>
-                                <p className="drag-hint">Drag kartu untuk <span>pindah kolom.</span> Tag bisa lebih dari satu per kartu.</p>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+                                    <p className="drag-hint" style={{ margin: 0 }}>Drag kartu untuk <span>pindah kolom.</span> Tag status otomatis disinkronkan.</p>
+                                    <button
+                                        onClick={handleSyncAllTags}
+                                        style={{
+                                            background: "rgba(230, 200, 74, 0.08)",
+                                            color: "#e6c84a",
+                                            border: "1px solid rgba(230, 200, 74, 0.25)",
+                                            borderRadius: "6px",
+                                            padding: "5px 12px",
+                                            fontSize: "10px",
+                                            letterSpacing: "0.06em",
+                                            cursor: "pointer",
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: "6px",
+                                            fontFamily: "'DM Mono', monospace"
+                                        }}
+                                        title="Sesuaikan semua tag kartu dengan kolom saat ini"
+                                    >
+                                        ⚡ Sync Semua Tag Kolom
+                                    </button>
+                                </div>
                                 <div className="waitlist-wrapper">
                                     <div className="waitlist-board">
                                         {BOARD_COLUMNS.map(col => {
