@@ -850,6 +850,7 @@ export default function AdminDashboard() {
 
     const totalCount = portfolios.length;
     const categories = Array.from(new Set(portfolios.map(p => p.category).filter(Boolean)));
+    const pendingRequestsCount = waitlistRequests.filter(r => (r.status || "pending") === "pending").length;
 
     return (
         <>
@@ -881,6 +882,28 @@ export default function AdminDashboard() {
         .s-item.active { color: var(--accent); background: rgba(var(--accent-rgb),0.06); }
         .s-item.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--accent); }
         .s-icon { width: 16px; text-align: center; font-size: 12px; }
+        .s-badge {
+          background: #e6c84a;
+          color: #080808;
+          font-size: 9px;
+          font-weight: 700;
+          font-family: 'DM Mono', monospace;
+          min-width: 18px;
+          height: 18px;
+          border-radius: 9px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 5px;
+          margin-left: auto;
+          letter-spacing: 0;
+          box-shadow: 0 0 8px rgba(230, 200, 74, 0.4);
+          animation: badgePulse 2s infinite ease-in-out;
+        }
+        @keyframes badgePulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 6px rgba(230, 200, 74, 0.3); }
+          50% { transform: scale(1.08); box-shadow: 0 0 12px rgba(230, 200, 74, 0.6); }
+        }
         .sidebar-stats { padding: 18px 22px; border-top: 1px solid var(--border); }
         .st-row { display: flex; justify-content: space-between; margin-bottom: 7px; }
         .st-l { font-size: 9px; letter-spacing: 0.1em; color: var(--muted); }
@@ -1075,7 +1098,11 @@ export default function AdminDashboard() {
                         <p className="s-label">Menu</p>
                         {TABS.map(t => (
                             <button key={t.id} className={`s-item ${activeTab === t.id ? "active" : ""}`} onClick={() => setActiveTab(t.id)}>
-                                <span className="s-icon">{t.icon}</span> {t.label}
+                                <span className="s-icon">{t.icon}</span>
+                                <span style={{ flex: 1 }}>{t.label}</span>
+                                {t.id === "requests" && pendingRequestsCount > 0 && (
+                                    <span className="s-badge">{pendingRequestsCount}</span>
+                                )}
                             </button>
                         ))}
                     </nav>
@@ -1105,6 +1132,28 @@ export default function AdminDashboard() {
                             {activeTab === "security" && <>System <em>Security Audit</em></>}
                         </h1>
                         <div className="topbar-r">
+                            {pendingRequestsCount > 0 && (
+                                <button
+                                    onClick={() => setActiveTab("requests")}
+                                    style={{
+                                        background: "rgba(230, 200, 74, 0.12)",
+                                        color: "#e6c84a",
+                                        border: "1px solid rgba(230, 200, 74, 0.3)",
+                                        borderRadius: "20px",
+                                        padding: "4px 10px",
+                                        fontSize: "9px",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "6px",
+                                        fontFamily: "'DM Mono', monospace",
+                                        cursor: "pointer",
+                                        transition: "all 0.2s"
+                                    }}
+                                    title="Klik untuk membuka Waitlist Requests"
+                                >
+                                    <span>📩</span> {pendingRequestsCount} Request Baru
+                                </button>
+                            )}
                             <span className="badge">{totalCount} Works</span>
                             {activeTab === "list" && <button className="btn-add-work" onClick={() => setShowAddModal(true)}>+ Add Work</button>}
                             {activeTab === "waitlist" && <button className="btn-add-work" onClick={() => { setAddCommissionDefaultColumn("Waitlist"); setShowAddCommissionModal(true); }}>+ Add Commission</button>}
