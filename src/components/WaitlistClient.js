@@ -93,7 +93,13 @@ export default function WaitlistClient({ initialCommissions, initialSettings }) 
                 body: JSON.stringify(formData)
             });
 
-            const data = await res.json();
+            let data;
+            try {
+                data = await res.json();
+            } catch {
+                data = { error: res.status === 504 ? "Gateway Timeout: Server sedang lambat merespons. Silakan coba kembali." : `Gagal memproses request (${res.status})` };
+            }
+
             if (!res.ok) {
                 setSubmitResult({ success: false, error: data.error || "Failed to submit request." });
             } else {

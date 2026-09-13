@@ -7,7 +7,12 @@ export default function SecurityShield() {
     const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
     const pathname = usePathname();
 
+    // Disable security shield completely on admin routes
+    const isAdmin = pathname?.startsWith("/admin");
+
     useEffect(() => {
+        if (isAdmin) return;
+
         // Allow developer bypass via query param (?debug=1) or localStorage
         if (typeof window !== "undefined") {
             const searchParams = new URLSearchParams(window.location.search);
@@ -28,7 +33,7 @@ export default function SecurityShield() {
             }
         };
 
-        // 3. Block Inspect Element & Source Code Hotkeys (Capture phase)
+        // 3. Block Inspect Element & Hotkeys
         const handleKeyDown = (e) => {
             // F12
             if (e.keyCode === 123 || e.key === "F12") {
@@ -36,19 +41,19 @@ export default function SecurityShield() {
                 e.stopPropagation();
                 return false;
             }
-            // Ctrl+Shift+I / J / C (DevTools & Console)
+            // Ctrl+Shift+I / J / C
             if (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67 || e.key === "I" || e.key === "J" || e.key === "C")) {
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
             }
-            // Ctrl+U (View Source)
+            // Ctrl+U
             if (e.ctrlKey && (e.keyCode === 85 || e.key === "u" || e.key === "U")) {
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
             }
-            // Ctrl+S (Save Page)
+            // Ctrl+S
             if (e.ctrlKey && (e.keyCode === 83 || e.key === "s" || e.key === "S")) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -62,10 +67,10 @@ export default function SecurityShield() {
             }
         };
 
-        // 4. Active DevTools Detection
+        // 4. Ultra-lightweight Event-Driven DevTools Detection (0% CPU impact)
         let detected = false;
 
-        const setShieldState = (state) => {
+        const updateShieldState = (state) => {
             if (detected !== state) {
                 detected = state;
                 setIsDevToolsOpen(state);
@@ -77,47 +82,17 @@ export default function SecurityShield() {
             }
         };
 
-        const detectDevTools = () => {
-            let isOpen = false;
-
-            // Method A: Dimension Delta (Docked DevTools bottom/right/left)
+        const checkDimensions = () => {
+            // Docked DevTools check: when DevTools is opened, window inner dimensions shrink significantly
             const threshold = 160;
             const widthDiff = window.outerWidth - window.innerWidth > threshold;
             const heightDiff = window.outerHeight - window.innerHeight > threshold;
+            const open = widthDiff || heightDiff;
 
-            if (widthDiff || heightDiff) {
-                isOpen = true;
-            }
+            updateShieldState(open);
 
-            // Method B: Execution Timing with Debugger (Detached / Undocked DevTools)
-            // When DevTools is closed, debugger takes ~0.001ms (no pause)
-            // When DevTools is open, execution pauses and takes > 100ms
-            if (!isOpen) {
-                const startTime = performance.now();
-                // eslint-disable-next-line no-debugger
-                debugger;
-                const endTime = performance.now();
-                if (endTime - startTime > 100) {
-                    isOpen = true;
-                }
-            }
-
-            // Method C: Console Object Getter Evaluation (Chromium / WebKit)
-            if (!isOpen) {
-                const img = new Image();
-                Object.defineProperty(img, "id", {
-                    get: function () {
-                        isOpen = true;
-                    }
-                });
-                console.log(img);
-                console.clear();
-            }
-
-            setShieldState(isOpen);
-
-            // If DevTools is open, activate anti-debugger loop to freeze inspection
-            if (isOpen) {
+            // If DevTools is actually open, freeze it so inspection is impossible
+            if (open) {
                 try {
                     (function () {
                         return false;
@@ -126,25 +101,17 @@ export default function SecurityShield() {
             }
         };
 
-        // Run detection every 400ms
-        const intervalId = setInterval(detectDevTools, 400);
+        // Event-driven: only executes when window viewport changes or regains focus (0% CPU at idle)
+        window.addEventListener("resize", checkDimensions, { passive: true });
+        window.addEventListener("focus", checkDimensions, { passive: true });
+        window.addEventListener("blur", () => setTimeout(checkDimensions, 300), { passive: true });
 
-        // Immediate detection on window events
-        const handleWindowChange = () => {
-            detectDevTools();
-        };
-
-        const handleBlur = () => {
-            // When iframe (e.g. YouTube) steals focus, check immediately after
-            setTimeout(detectDevTools, 300);
-        };
+        // Passive lightweight timer check (every 2 seconds, no memory allocation, no console spam)
+        const intervalId = setInterval(checkDimensions, 2000);
 
         document.addEventListener("contextmenu", handleContextMenu);
         document.addEventListener("dragstart", handleDragStart);
         window.addEventListener("keydown", handleKeyDown, true);
-        window.addEventListener("resize", handleWindowChange);
-        window.addEventListener("focus", handleWindowChange);
-        window.addEventListener("blur", handleBlur);
 
         return () => {
             clearInterval(intervalId);
@@ -152,13 +119,12 @@ export default function SecurityShield() {
             document.removeEventListener("contextmenu", handleContextMenu);
             document.removeEventListener("dragstart", handleDragStart);
             window.removeEventListener("keydown", handleKeyDown, true);
-            window.removeEventListener("resize", handleWindowChange);
-            window.removeEventListener("focus", handleWindowChange);
-            window.removeEventListener("blur", handleBlur);
+            window.removeEventListener("resize", checkDimensions);
+            window.removeEventListener("focus", checkDimensions);
         };
-    }, [pathname]);
+    }, [pathname, isAdmin]);
 
-    if (!isDevToolsOpen) return null;
+    if (isAdmin || !isDevToolsOpen) return null;
 
     return (
         <div

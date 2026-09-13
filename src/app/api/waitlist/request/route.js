@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabaseServer";
 import { checkRateLimit, getClientIp, sanitizeInput, isHuman } from "@/lib/security";
+import { Resend } from "resend";
 
 export async function POST(request) {
     try {
@@ -54,6 +55,64 @@ export async function POST(request) {
                 }, { status: 500 });
             }
             return NextResponse.json({ error: error.message }, { status: 400 });
+        }
+
+        // Send Email Notification to Admin via Resend (with safety timeout)
+        const resendApiKey = process.env.RESEND_API_KEY;
+        const notificationEmail = process.env.NOTIFICATION_EMAIL || "gn.migi@gmail.com";
+
+        if (resendApiKey) {
+            try {
+                const resend = new Resend(resendApiKey);
+                const sendPromise = resend.emails.send({
+                    from: "Migi Portfolio <onboarding@resend.dev>",
+                    to: notificationEmail,
+                    subject: `[New Waitlist Request] ${client_name} - ${project_type}`,
+                    html: `
+                        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0c0c0e; color: #f0ece4; padding: 32px; border-radius: 12px; max-width: 560px; margin: auto; border: 1px solid #222;">
+                            <div style="border-bottom: 1px solid #222; padding-bottom: 16px; margin-bottom: 24px;">
+                                <h2 style="margin: 0; color: #d4c4a8; font-size: 20px; letter-spacing: 0.05em;">New Waitlist Request 📩</h2>
+                                <p style="margin: 4px 0 0; color: #888; font-size: 12px;">Ada calon klien yang mengajukan slot komisi baru di website Anda.</p>
+                            </div>
+
+                            <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                                <tr>
+                                    <td style="padding: 10px 0; color: #888; width: 140px;">Client Name</td>
+                                    <td style="padding: 10px 0; font-weight: 600; color: #fff;">${client_name}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; color: #888;">Contact Info</td>
+                                    <td style="padding: 10px 0; color: #d4c4a8;">${contact_info}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; color: #888;">Project Type</td>
+                                    <td style="padding: 10px 0; color: #fff;">${project_type}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; color: #888;">Budget Range</td>
+                                    <td style="padding: 10px 0; color: #4ae6b8; font-weight: 600;">${budget_range || "Flexible"}</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 10px 0; color: #888; vertical-align: top;">Description</td>
+                                    <td style="padding: 10px 0; color: #ddd; line-height: 1.6; white-space: pre-wrap;">${description || "—"}</td>
+                                </tr>
+                            </table>
+
+                            <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #222; text-align: center;">
+                                <p style="font-size: 11px; color: #666; margin: 0;">Buka Admin Dashboard untuk menyetujui (Approve) atau menolak request ini.</p>
+                            </div>
+                        </div>
+                    `,
+                });
+
+                // Safety timeout: max 3.5s so external email delays never hang the API
+                const timeoutPromise = new Promise((resolve) =>
+                    setTimeout(() => resolve({ timeout: true }), 3500)
+                );
+                await Promise.race([sendPromise, timeoutPromise]);
+            } catch (emailErr) {
+                console.error("Resend notification error:", emailErr);
+            }
         }
 
         return NextResponse.json({
